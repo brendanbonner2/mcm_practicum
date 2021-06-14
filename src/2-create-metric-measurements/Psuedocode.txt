@@ -1,0 +1,60 @@
+This is the example of how to get the verify the model:
+
+When downloading either an official keras model of downloading from the web, we call a function to check the checksum of the model. Using both of these, we can check the baseline weights:
+
+model = Download model(keras.model.vgg16)
+bbInitialise(model)
+{
+	for each layer in model:
+		convert to numpy array
+		store array in bbData.Layer[0][layer].data
+		create a checksum of numpy array
+		store value in bbData.Layer[0][layer].checksum
+
+	get checksum of all bbData.layer[0][].checksum
+	store as bbData.checksum[0]
+}
+
+
+When you have trained a model, or want to checkpoint it, you call:
+
+bbUpdate(model)
+{
+	for each layer:
+		convert to numpy
+		store array in bbData.layer[n][layer].data
+		compare with previous layer
+		if no change(mark as frozen)
+		if changes
+			record the +/- delta
+			store as bbData.layer[n][layer].delta
+
+	get checksum of all bbData.layer[n][].checksum
+	store as bbData.checksum[n]
+}
+
+bbPush()
+{
+	get block containing initial model
+		validate block
+
+	for each unrecorded update:
+		push the bbData to the cloud
+		push checksum to blockchain, with pointer to original model and location of bbData update
+}
+
+bbValidate(model)
+{
+	run through the model verification
+	get verification pointer
+	compare checksums with blockchain checksums
+}
+
+bbProvenance(model)
+{
+	lookup the current model
+	for every iteration found, point to previous model until init found
+	create a path with model versions and validations
+		include the delta of each model difference in the report
+}
+

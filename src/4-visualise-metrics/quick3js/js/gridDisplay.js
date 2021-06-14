@@ -1,3 +1,8 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+const controls = new OrbitControls();
+
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -21,7 +26,7 @@ var geometry2 = new THREE.BoxGeometry(0.2, 0.1, 0.1);
 var geometry_arr = [geometry, geometry1, geometry2];
 
 var material = new THREE.MeshBasicMaterial({
-  color: 0xaaaa00
+  color: 0xaa00
 });
 var materialDense = new THREE.MeshBasicMaterial({
   color: 0x00aaaa
