@@ -1,7 +1,7 @@
 \section{Method}
 Method should outline how the task/experiment was carried out, including rationale for any decisions made. Details of any equipment and subjects used should be also included. Basically, you should include enough information, so that the reader could duplicate as much of the experimental conditions or design details as possible.
 
-\section{Reducing Model without Losing Character}
+\subsection{Reducing Model without Losing Character}
 The first part of the delivery required that a model, in this case a CNN model in Keras, could be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model is an 
 \begin{enumerate}
 \item input shape
@@ -17,10 +17,11 @@ and within each of the layers, there are is a series of layers that, depending o
     \item StdDev: An indication of the deviation of values, to assist in seeing how the values are weighted
     \item Histogram: A Histogram of the distribution of values across the layer. This will assist in giving a more informed distribution. As there are a large number of potential entries in the dense layers, from binary to minute changes in float values, the Histogram will be split between the values smallest non-zero granularity and the largest value across 10 bins.
     \item Name.
+    \item Angle of Data : This is a single value representing the weighting of 
     \item A Hash of the Layer Values (weights and biases)
 \end{itemize}
 
-\section{Recording Changes}
+\subsection{Recording Changes}
 As we now have a method of identifying the model in a broken down format, the next stage is to record and apply a signature to the model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
 
 To ensure this is done correctly, we have two applications - local and global.
@@ -36,4 +37,6 @@ For global changes there will be a globa repository containing the signature and
 \subsection{Local Changes}
 
 An additional benefit of the summarisation is to be able to view the model as it is being trained. This is a local filestore or database that contains a more regular record of the the summary changes. It is recommended that global model reporistory is only used for publishing models that require tracability, and not for regular changes.
-    
+
+\paragraph*{Comparing Models}
+To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textif{StdDev} & \textit{Angle of Array}
