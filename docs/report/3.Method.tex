@@ -33,10 +33,11 @@ For global changes there will be a globa repository containing the signature and
     \item Creation Date - This will be the timestamp that the model was first added to the repository
     \item Parent - The model identification of the direct parent of the model.
     \item Model Summary - A binary object that contains the items generated in the table above.
-    \end{enumerate}
+\end{enumerate}
+
 \subsection{Local Changes}
 
 An additional benefit of the summarisation is to be able to view the model as it is being trained. This is a local filestore or database that contains a more regular record of the the summary changes. It is recommended that global model reporistory is only used for publishing models that require tracability, and not for regular changes.
 
-\paragraph*{Comparing Models}
-To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textif{StdDev} & \textit{Angle of Array}
+\subsection{Comparing Models}
+To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textit{StdDev} and \textit{Angle of Array}
