@@ -6,9 +6,8 @@ system. The complexity of even the simplest models makes this unviable.
 The introduction usually describes the background of the project with brief information on general knowledge of the subject. This sets the scene by stating the problem being tackled and what the aims of the project are.
 
 \subsection{The Role of Models in CNNs}
+A model in deep neural networks is the basis for the fuzzy nature of a certain outcome based on an input. As the input changes, the impact on weights, balances and activation functions in trained models can provide significant changes in outcomes, whether we a are classifying the image, identifying components or using the outcome as the basis for generating an outcome. In frameworks like Keras and Pytorch, the Model contains roughly the same structure, based on an input layer, a number of hidden layers, and finally a clasification or output layer. As a model is trained, the input layer and all not weighted layers remain the same, but the back propagation function continuously changes the weights and biases across multiple layers with diverse interlinks.
 \subsection{Identifying Differences in Models}
+Each layer is made up of a structure containing a dictionary of details, plus a multi dimensional array containing the weights for each sublayer that covers all the dimensions, plus a series of biases. While trying to understanding the internals of layers is interesting but relatively futile, being able to break down the structure of the layer into a unique single identifier that is non-repeatable across the smallest changes, but also allows comparison between instances of the layers when trained.
 \subsection{Weights and Biases}
-\subsection{}
-\subsection{}
-\subsection{}
-\subsection{}
+
