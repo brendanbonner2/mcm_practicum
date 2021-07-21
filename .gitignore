@@ -1,4 +1,4 @@
-# Add files names (and patterns) you want git to ignore here.
+s# Add files names (and patterns) you want git to ignore here.
 
 # Ignore java .class files.
 *.class
@@ -9,3 +9,5 @@
 # Ignore everything in the build directory.
 build/
 src/python/Icon
+src/python/Icon
+src/4-visualise-metrics/quick3js/src/.DS_Store
