@@ -38,5 +38,7 @@ For global changes there will be a globa repository containing the signature and
 
 An additional benefit of the summarisation is to be able to view the model as it is being trained. This is a local filestore or database that contains a more regular record of the the summary changes. It is recommended that global model reporistory is only used for publishing models that require tracability, and not for regular changes.
 
+In keeping with Git vocabulary, local changes are updated with the \textit{model_add(model[, parent])} command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons. To commit the model to the public repository, the \textit{model_add(model[, parent])} command is used, with this time the original model that already exists in the repository. The command will return an error if the parent does not exist.
+
 \paragraph*{Comparing Models}
 To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textif{StdDev} & \textit{Angle of Array}

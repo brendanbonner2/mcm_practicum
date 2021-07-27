@@ -21,8 +21,8 @@ certain bias tests. This is further developed by IBMs AI360 Fairness toolkit
 paper which show how this is measured and corrected, but not being able to
 identify where that behaviour was acquired and why a model is trained in a
 certain way to develop these outcomes.
- There is currently a gap in identifying
-if there is a provenance of trust when using deployed AI systems, and if sibling
+
+There is currently a gap in identifying if there is a provenance of trust when using deployed AI systems, and if sibling
 and inherited models retain these behaviours and if this can be visualised.
 While attempts to visualise the internals of decisions in the Simonyon and Bau
 papers, these focus on trying to visualise the pathways being activated in a 2
@@ -30,7 +30,7 @@ dimensional map. The dissection and visualisation papers provide a key how to
 measure and record this aspect of models, and our research will examine if there
 is a potential to securely record neural network snapshots.
  
- The question being asked is to determine if we develop a novel mechanism and metric for
+The question being asked is to determine if we develop a novel mechanism and metric for
 representing the evolution of knowledge within a neural network during the
 training and development stages of creating a model. By analysing the state of
 the art in terms of AI fairness and methods of visualising the dissected layers
@@ -48,4 +48,15 @@ foundation into further research towards comparisons of human trust and
 artificial intelligence trust.
 
 
-\subsection{Maintaining the Integrity of the Specifications}
+\subsection{Objectives}
+The overall objectives of the practicum are as follows:
+
+\begin{itemize}
+    \item Discover a method to extract a unique signature from any Deep Neural Network software model.
+    \item Create a local and global verification trail for
+    \begin{itemize}
+        \item A Path of provenance to all ancestor models
+        \item A method to evaluate divergence of the child model from the parent
+    \end{itemize}
+    \item Validation of Provenance via verification and illustration
+\end{itemize}
