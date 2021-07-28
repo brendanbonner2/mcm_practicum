@@ -1,4 +1,4 @@
-# Add files names (and patterns) you want git to ignore here.
+s# Add files names (and patterns) you want git to ignore here.
 
 # Ignore java .class files.
 *.class
@@ -34,3 +34,5 @@ build/
 *.synctex.gz
 *latexmk
 *.fls
+.DS_Store
+Icon?

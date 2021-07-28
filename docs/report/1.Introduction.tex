@@ -47,6 +47,8 @@ artificial intelligence system evolves over time, if this can provide a
 foundation into further research towards comparisons of human trust and
 artificial intelligence trust.
 
+\subsection{Synopsis}
+To deliver the model synopsis, a reduction algorithm was applied to each layer in the model, reducing the weights and biases to a pair of unique identifiers containing the \textit{standard deviation} and the \textit{variance}, representing the distribution skew of the data away from a normal distribution. Once this synopsis is applied, we were able to reduce all default keras models from several megabytes to several kb arrays that are comparabile and the basis for generation of a unique signature.
 
 \subsection{Objectives}
 The overall objectives of the practicum are as follows:
@@ -60,3 +62,5 @@ The overall objectives of the practicum are as follows:
     \end{itemize}
     \item Validation of Provenance via verification and illustration
 \end{itemize}
+
+Once the signature is generated, we are able to create a immutable link to a previous model, and store the deviation of both the structure and the weights as a factor. The key element of this is the generation of a lineage for both training and validating that there is a history of the model's evolution.
