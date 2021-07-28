@@ -11,7 +11,7 @@ A model in deep neural networks is the basis for the fuzzy nature of a certain o
 Each layer is made up of a structure containing a dictionary of details, plus a multi dimensional array containing the weights for each sublayer that covers all the dimensions, plus a series of biases. While trying to understanding the internals of layers is interesting but relatively futile, being able to break down the structure of the layer into a unique single identifier that is non-repeatable across the smallest changes, but also allows comparison between instances of the layers when trained.
 \subsection{Weights and Biases}
 
-\section{Literary Review}
+\subsection{Literary Review}
 
 The practicum investigates the need and demand for evaluating the development of a methodology for efficiently recording the learning process of an AI model, focusing on convolutional neural networks. The vision will establish if existing CNN explainability methods can be used to define a novel temporal chain of major differences in the underlying structure of the network during training.
  
@@ -20,7 +20,7 @@ Once we have determined what elements of value in the process show what can be r
 The research area overlaps between the current drive to explain black box models to address trust issues with artificial intelligence, with the drive to be able to optimise and evaluate the process for creating and expanding existing models. The bulk of current research focuses on the behaviour of neural networks after training, examining how an input triggers various layers, and this has reduced as deeper networks become more commonplace. Starting to record and validate how networks are trained, rather than used may provide additional support to trustworthy AI, while benefiting training evaluations and visualisation of when neurons are activated during the learning process.
 
 
-\subsection{State of the Art}
+\paragraph{State of the Art}
 What is the state of the art in relation to measuring the layers and understanding convolutional neural networks for explainability.
 
 \begin{itemize}
@@ -39,7 +39,7 @@ What is the state of the art in relation to measuring the layers and understandi
 \end{itemize}
 
 
-\subsection{Interpretation of the Learning Process}
+\paragraph{Interpretation of the Learning Process}
 \begin{enumerate}
     \item Overview of the Theme
     Once we understand that there is a gap in being able to visualise the learning process when training each convolutional neural pathway in an AI system, we then have to examine the state of the art in being to interpret this training process. In this part, research is quite light, as the focus has been on understanding a network when it is making a classification or using evaluation to interpret differences in classification. The approach that I will take is to examine how individual elements of each layer are tweaked during the training process. While a brute force approach would be to record the loss function changes in back-propagation for every trained step, this would result in a compute requirement of 12m parameter changes each step, which would require multi-terabyte storage for even a competition trained VGG-16 network. The approach has to be optimal to record only changes in neurons that are beyond an average activation threshold, and then only in a constant dimension depth per layer. The resulting delta will be configured everyX steps or epochs to provide a consistent path of evolution during training.
@@ -51,14 +51,16 @@ What is the state of the art in relation to measuring the layers and understandi
     \end{enumerate}
 \end{enumerate}
 
-\subsection{Visualisation of Convolutional Network Values}
+\paragraph{Visualisation of Convolutional Network Values}
 Focus on the exploration of data layers of a CNN - Explore the layers of a neural network with your camera and how this evolved from GradCam. More traditional visualisation techniques are needed to better understand CNNs, and we will use the same approach. More complex 3D imaging will be required due to the need to see temporal differences in the network over time.
 
 \begin{enumerate}
     \item A close examination of visualisation techniques push back to the development Of the open Stuttgart Neural Network Simulator (SNNS), which allowed the early definition and visualisation (based on X11 graphics) to get the size and scale of the demostrations of the largest A good example of research is Adam Harley's visualisation tool that shows the full CNN complete with all interconnections, and weighted values that are activated on (in this case MNIST) data and a hand drawn input. DOI: 10.1007/978-3-319-27857-5 77  This is based on previous work, such as the stuttgart Neural Network Simulator (SNNS) 
     \item There is also some good visualisation of the network by using the ConvNetJS library, which looks at training data for activations, but again this is based on visualisation of the network and how the weights impact the next layer. This network has 1024 nodes on the bottom layer (corresponding to pixels), six 5x5 (stride 1) convolutional filters in the first hidden layer, followed by sixteen 5x5 (stride 1) convolutional filters in the second hidden layer, then three fully-connected layers, with 120 nodes in the first, 100 nodes in the second, and 10 nodes in the third. The convolutional layers are each followed by downsampling layer that does 2x2 max pooling (with stride 2). 
+\end{enumerate}
 
-\subsection{Literature Review Conclusion}
+
+\paragraph{Overview of State of the Art}
 While there has been continuous research and improvement into the field of explainability, there remains a disconnect between the understanding of why a neural network produces a specific outcome – of which research is plentiful; and a lack of investigation into establishing a trust quotient to provide verifiable classifications based on either its initial training or amendments provided after transfer.
 
 The benefit of the research is there is a clear metric and methodology to verify what components of a CNN are activated by a source image, and we can do this not only in an interesting way that can show how far down a deep network the feature or concept is important, but also to guide optimisations. CNN visualisation is also strong, but again based on the use not how it was trained.
