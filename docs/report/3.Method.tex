@@ -57,6 +57,13 @@ The local repository stores the abstracted model information set that can be use
 To commit the model to the public repository, the \verb|model_add(model, [parent])| command is used, with this time the original model that already exists in the repository. The command will return an error if the parent does not exist.
 
 
+To provide reference storage for the model repositories, we created two mongodb instances with the same collection structure. There are two collections - the signatures and the model data. This was to enable verification of the evolution path and when necessary pull the model synopsis for comparison.
+
+\texttt{
+    db.model.createIndex( {signature:1},{unique:true} )
+    db.model.insertOne( { signature:'0x123412341234', creator:'brendanboner@gmail.com', previous:null, date:'01-01-2020 16:25' } )
+}
+
 \subsection{Comparing Models}
 To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textit{StdDev} \& \textit{Angle of Array}
 
