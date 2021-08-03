@@ -72,7 +72,7 @@ class lifecycle:
 
         return layer_structure, layer_values
 
-    def create_model_data(model):
+    def create_model_data(self, model):
         # initiate hashing function
         sha = hashlib.sha256()
 
@@ -81,7 +81,7 @@ class lifecycle:
         
         for index, value in enumerate(model.layers):
             # Run through the layers
-            layer_structure, layer_data = create_layer_data(value)
+            layer_structure, layer_data = self.create_layer_data(value)
             # print(layer_data, layer_values, hash(layer_values))
             sha.update(repr(layer_structure).encode('utf-8'))
             sha.update(repr(layer_data).encode('utf-8'))
