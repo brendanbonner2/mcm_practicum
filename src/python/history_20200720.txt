@@ -28,13 +28,13 @@ from keras.models import Model
 model2.get_config() == model.get_config()
 	for l1, l2 in zip(mdl.layers, mdl2.layers):
 		print(l1.get_config() == l2.get_config())
-		for l1, l2 in zip(model1.layers, model2.layers):
+		for l1, l2 in zip(model_vgg16.layers, model2.layers):
 			print(l1.get_config() == l2.get_config())
-			model1 = model
-			for l1, l2 in zip(model1.layers, model2.layers):
+			model_vgg16 = model
+			for l1, l2 in zip(model_vgg16.layers, model2.layers):
 	print(l1.get_config() == l2.get_config())
-	model1.layers.get_config()
-	zip(model1.layers)
+	model_vgg16.layers.get_config()
+	zip(model_vgg16.layers)
 	from tensorflow.keras.layers import Input, Conv2D, Dense, Flatten
 	from tensorflow.keras.models import Model
 
@@ -95,7 +95,7 @@ model = Model(ipt, out)
 		print(w.shape)
 		return W
 
-		def hist_weights(weights, bins=500):
+		def hist_weights(weights, bins=20):
 			for weight in weights:
 			plt.hist(np.ndarray.flatten(weight), bins=bins)
 

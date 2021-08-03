@@ -1,0 +1,483 @@
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %% [markdown]
+# This notebook is the tester for developing a system for recording models in a simplistic method
+
+# %%
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+
+model_vgg16_1 = tf.keras.applications.VGG16()
+
+model_vgg16 = tf.keras.applications.VGG16(
+    include_top=True,
+    weights="imagenet",
+    input_tensor=None,
+    input_shape=None,
+    pooling=None,
+    classes=1000,
+    classifier_activation="softmax",
+)
+
+
+model_vgg16_test = tf.keras.applications.VGG16(
+    include_top=True,
+    weights="imagenet",
+    input_tensor=None,
+    input_shape=None,
+    pooling=None,
+    classes=1000,
+    classifier_activation="softmax",
+)
+
+model_resnet50 = tf.keras.applications.ResNet50(
+    include_top=True,
+    weights=None,
+    input_tensor=None,
+    input_shape=None,
+    pooling=None,
+    classes=500,
+    classifier_activation="softmax",
+)
+
+
+model_resnet50_imagenet = tf.keras.applications.ResNet50(
+    include_top=True,
+    weights='imagenet',
+    input_tensor=None,
+    input_shape=None,
+    pooling=None,
+    classifier_activation="softmax",
+)
+
+
+# %%
+# From https://stackoverflow.com/questions/13530762/how-to-know-bytes-size-of-python-object-like-arrays-and-dictionaries-the-simp
+
+import gc
+import sys
+
+def get_obj_size(obj):
+    marked = {id(obj)}
+    obj_q = [obj]
+    sz = 0
+
+    while obj_q:
+        sz += sum(map(sys.getsizeof, obj_q))
+
+        # Lookup all the object referred to by the object in obj_q.
+        # See: https://docs.python.org/3.7/library/gc.html#gc.get_referents
+        all_refr = ((id(o), o) for o in gc.get_referents(*obj_q))
+
+        # Filter object that are already marked.
+        # Using dict notation will prevent repeated objects.
+        new_refr = {o_id: o for o_id, o in all_refr if o_id not in marked and not isinstance(o, type)}
+
+        # The new obj_q will be the ones that were not marked,
+        # and we will update marked with their ids so we will
+        # not traverse them again.
+        obj_q = new_refr.values()
+        marked.update(new_refr.keys())
+
+    return sz
+
+import sys
+   
+print(get_obj_size(model_vgg16))
+
+print(get_obj_size(model_resnet50))
+print(get_obj_size(model_resnet50_imagenet))
+
+
+# %%
+for l1, l2 in zip(model_vgg16.layers, model_resnet50.layers):
+    conf1 = l1.get_config()
+    conf2 = l2.get_config()
+
+    if ('batch_input_shape' in conf1) or ('units' in conf1):
+        print(conf1 == conf2)
+        print(conf1['name'])
+
+
+# %%
+layer = model_vgg16.layers[1]
+
+layer_data  = (
+    layer.__class__.__name__,
+    layer.input_shape,
+    layer.output_shape,
+    layer.trainable,
+    layer.count_params()
+)
+print(layer_data)
+
+
+# %%
+import hashlib
+from scipy.stats import skew
+
+
+# %%
+
+
+def create_layer_data(layer):
+
+    # get structure array
+    layer_structure  = {
+        "class": layer.__class__.__name__,
+        "input_shape": layer.input_shape,
+        "output_shape": layer.output_shape,
+        "trainable": layer.trainable,
+        "params": layer.count_params(),
+        "name": layer.name
+    }
+
+    # get layer weights and bias
+    weights = layer.get_weights()
+    if len(weights) == 1:
+        weight_x = np.ndarray.flatten(weights[0])
+        bias_x = np.array([])
+        skew_x = skew(np.ndarray.flatten(weights[0]))
+
+    if len(weights) > 1:
+        weight_x = np.ndarray.flatten(weights[0])
+        bias_x = np.ndarray.flatten(weights[1])
+        skew_x = skew(np.ndarray.flatten(weights[0]))
+
+    else:
+        weight_x = np.array([0])
+        bias_x = np.array([0])
+        skew_x = 0
+
+    layer_values = {
+        "weight_std" : np.std(weight_x).item(),
+        "weight_mean" : np.mean(weight_x).item(),
+        "bias_std" : np.std(bias_x).item(),
+        "bias_mean" : np.mean(bias_x).item(),
+        "skew" : skew_x
+    }
+
+    return layer_structure, layer_values
+
+def create_model_data(model):
+    # initiate hashing function
+    sha = hashlib.sha256()
+
+    layer_data_set = {}
+    layer_structure_set = {}
+    
+    for index, value in enumerate(model.layers):
+        # Run through the layers
+        layer_structure, layer_data = create_layer_data(value)
+        # print(layer_data, layer_values, hash(layer_values))
+        sha.update(repr(layer_structure).encode('utf-8'))
+        sha.update(repr(layer_data).encode('utf-8'))
+
+        layer_data_set[str(index)] = layer_data
+        layer_structure_set[str(index)] = layer_structure
+
+    
+    layer_data = {"structure":layer_structure_set, "data":layer_data_set}
+#    sha.update(repr(layer_data).encode('utf-8'))
+
+    return sha.hexdigest(), layer_data
+
+
+
+
+#     sha.update(repr(layer_data).encode('utf-8'))
+
+
+# %%
+# Make a small adjustment to test the SHA change
+weights = model_vgg16.layers[1].get_weights()
+print(weights[0][0][0][0][0])
+weights[0][0][0][0][0] = weights[0][0][0][0][0] * 1.002
+print(weights[0][0][0][0][0])
+model_vgg16_test.layers[1].set_weights(weights)
+
+
+# %%
+
+signature1, layer_data1 = create_model_data(model_vgg16)
+print(signature1)
+signature2, layer_data2 = create_model_data(model_vgg16_test)
+print(signature2)
+
+# 5334e90eb169d941ae8c699abb32f0999d44ea058e221dd207f568a68c65835b
+# 5030bac61995e80abd7377ac917fa7ca81378245203fa3ae4dce2c4a5804cf4d
+
+
+# %%
+
+
+
+# %%
+# setup global write variables
+bb_username = 'brendan.bonner@mail.dcu.ie'
+bb_organisation = 'DCU'
+bb_model_source = 'created in python'
+
+
+# %%
+import pymongo
+from bson.objectid import ObjectId
+
+def init_model_db():
+    global db_col_data
+    global db_col_signature
+
+    dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    dbclient_database = dbclient["model_database"]
+
+
+
+    db_col_data = dbclient_database["modeldata"]
+    db_col_signature = dbclient_database["signature"]
+
+    db_col_data.create_index(
+        [("signature", pymongo.DESCENDING)],
+        unique=True
+    )
+
+
+def write_model_db(
+    signature,
+    model_data,
+    username = bb_username,
+    organisation = bb_organisation,
+    model_source=bb_model_source,
+    parent = '',
+    local=True):
+
+    if (local):
+
+        # Insert Signature to Database (signatures)
+        x = db_col_data.insert_one(model_data)
+        model_id = x.inserted_id
+        print(model_id, 'for sig: ', signature)
+
+        # Inset Model Data to Database (modeldata)
+        signature_data =  {
+            'signature': signature,
+            'parent': parent,
+             'username': username,
+             'organisation':organisation,
+             'model_source': model_source,
+             'model_data': model_id
+        }
+
+        x = db_col_signature.insert_one(signature_data)
+        signature_model_id = x.inserted_id
+        return signature_model_id
+
+    else:
+        print('cloud insert here')
+
+
+def push_model(model, local=True, parent=None):
+    signature, layer_data = create_model_data(model)
+    print(signature)
+
+    write_model_db(
+        signature=signature,
+        model_data=layer_data,
+        parent=parent
+    )
+    return signature
+
+
+
+def get_model(signature):
+    signature_data = db_col_signature.find_one({'signature': signature})
+    if(signature_data):
+        return signature_data
+    else:
+        return None
+
+
+# The web framework gets post_id from the URL and passes it as a string
+def get_model_data(model_id):
+    document = db_col_data.find_one({'_id': ObjectId(model_id)})
+    return document
+
+
+# %%
+#initialise model database
+init_model_db()
+
+
+# %%
+
+
+
+# %%
+# get a signature and write it to the model
+
+parent = push_model(model_vgg16)
+last = push_model(model_vgg16_test, parent=parent)
+
+parent = push_model(model_resnet50)
+last = push_model(model_resnet50_imagenet,parent=parent)
+
+'''
+signature, layer_data = create_model_data(model_vgg16)
+last_signature = write_model_db(
+    signature=signature,
+    model_data=layer_data,
+    model_source='https://github.com/keras-team/keras-applications/blob/master/keras_applications/vgg16.py'
+)
+
+
+signature, layer_data = create_model_data(model_vgg16_test)
+new_signature = write_model_db(
+    signature=signature,
+    model_data=layer_data,
+    parent = last_signature
+)
+'''
+
+
+# %%
+
+signature, layer_data = get_model_data(model_resnet50)
+
+new_signature = write_model_db(
+
+    signature=signature,
+    model_data=layer_data,
+    username=username,
+    organisation='Google Inc',
+    model_source='Keras Application ResNet50',
+    parent = None
+)
+
+
+# %%
+# Get model and write to layer
+
+signature_data = get_model('494fed29ca541dfecf69067213e9f33961fa712acdd2aeb2bade3efc5557873f')
+
+print(signature_data['_id'].generation_time, signature_data['model_data'])
+
+model_data = get_model_data(signature_data['model_data'])
+
+print(model_data['data']==layer_data['data'])
+
+
+# %%
+def diff_model(model_vgg16, model_resnet50):
+    for l1, l2 in zip(model_vgg16.layers, model_resnet50.layers):
+        w1 = l1.get_weights()
+        w2 = l2.get_weights()
+        if len(w1) > 0:
+            wa1 = np.ndarray.flatten(w1[0])
+            wa2 = np.ndarray.flatten(w2[0])
+            # Weights available
+            print(l1.get_config()['name'],
+                w1[0].shape,
+                np.std(wa1), np.median(wa1),
+                w2[0].shape,
+                np.std(wa2), np.median(wa2),
+                np.std(wa1) == np.std(wa2)
+            )
+            
+        else:
+            print(l1.get_config()['name'],len(w1))
+
+
+# %%
+
+
+
+# %%
+print(layer_data['structure'])
+
+
+# %%
+
+
+
+# %%
+
+
+model_vgg16_test.layers[1].set_weights(model_vgg16.layers[1].get_weights() + 1)
+print(model_vgg16.get_weights()[1])
+print(model_vgg16_test.get_weights()[1])
+
+
+# %%
+# Database functions
+
+import pymongo
+import datetime
+
+from pymongo import MongoClient
+
+client = MongoClient('mongodb+srv://cluster0.7ilyj.mongodb.net/myFirstDatabase')
+
+
+# %%
+db = client.model
+db.model.list_indexes()
+
+
+# %%
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
+#Display a comparison of multiple layers
+def get_weights_print_stats(layer):
+    W = layer.get_weights()
+    if len(W) > 0:
+        print(len(W))
+        print(W[0].shape)
+    return W
+
+def hist_weights(weights, bins=100, label='default'):
+    for weight in weights:
+        
+        plt.hist(np.ndarray.flatten(weight), bins=bins, label=label)
+
+'''
+for l1, l2 in zip(model_vgg16.layers, model_resnet50.layers):
+    print(l1.get_config()['name'])
+    W = get_weights_print_stats(l1)
+    hist_weights(W, label='Model 1')
+    W = get_weights_print_stats(l2)
+    hist_weights(W, label='Model 2')
+    plt.show()
+'''
+for l1, l2 in zip(model_vgg16.layers, model_resnet50.layers):
+    w1 = l1.get_weights()
+    w2 = l2.get_weights()
+    if len(w1) > 0:
+        # Layers available
+        print(l1.get_config()['name'],len(w1), w1[0].shape)
+        plt.hist(
+            [ np.ndarray.flatten(w1[0]),
+            np.ndarray.flatten(w2[0])],
+            alpha=0.5, bins=1000, label=['X','Y'])
+        plt.legend(loc='upper right')
+
+        plt.show()
+
+    else:
+        print(l1.get_config()['name'],len(w1))
+    
+
+
