@@ -1,0 +1,21 @@
+# File for creating sequencediargam.org files
+title Train and Commit Models
+
+participantgroup  **Local Training**
+participant LocalDB
+participant Alice
+end
+
+# Participants
+actor Alice
+participant LocalDB
+participant CloudDB
+database Repo
+
+
+
+Alice->Alice:train model
+note left of Alice:generate signature, model_data
+Alice   ->  LocalDB :signature, model_data
+
+Alice->CloudDB:push model (signature, model_data)

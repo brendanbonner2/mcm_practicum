@@ -1,0 +1,22 @@
+# File for creating sequencediargam.org files
+title Connect and Create Baseline
+
+
+participantgroup  **Local Environment**
+participant LocalDB
+participant Alice
+end
+
+# Participants
+actor Alice
+participant LocalDB
+participant CloudDB
+database Repo
+
+Alice->CloudDB:Authenticate
+Alice<--CloudDB:response
+Alice ->  Repo : Get Model
+Alice<--Repo:model
+note left of Alice : generate signature, model_data
+Alice   ->  LocalDB :signature, model_data
+Alice   <-- LocalDB :success/fail
