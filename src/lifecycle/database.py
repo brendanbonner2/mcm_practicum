@@ -1,14 +1,17 @@
 # database functions for the lifecycle management
 
 from re import X
+import deepdiff
+from deepdiff import diff
 import pymongo
-import datetime
+from deepdiff import DeepDiff
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 import logging
 log = logging.getLogger(__name__)
+logging.basicConfig(filename='{}.log'.format(__name__), encoding='utf-8', level=logging.DEBUG)
 
 
 
@@ -118,7 +121,11 @@ class lifecycle_db:
         if self.get_signature(signature) == None:
             x = db_data.insert_one(model_data)
             model_id = x.inserted_id
-            log.info(model_id, 'for sig: ', signature)
+
+            log.info('New model reference {} for {}'.format(
+                model_id,
+                signature)
+            )
 
             # Inset Model Data to Database (modeldata)
             signature_data =  {
@@ -184,14 +191,31 @@ class lifecycle_db:
             db_data = self.remote_data_collection
 
         if signature:
-            print('signatture', signature)
+            log.info('getting model for signature: {}'.format(signature))
+            mysig = self.get_signature(signature=signature, local=local)
+            if not mysig:
+                # if not local then get remote
+                log.info('could not find signature locally, searching remote repo')
+                mysig = self.get_signature(signature=signature, local=False)
 
-            model_object = self.get_signature(signature=signature, local=local)['model_data']
-            document = db_data.find_one({'_id': model_object})
-            return document
+            if mysig:
+                model_object = mysig['model_data']
+                document = db_data.find_one({'_id': model_object})
+            else:
+                log.warning('Could not find signature')
+                document = None
         else:
+            log.info('getting model for model_id: {}'.format(model_id))
+
             document = db_data.find_one({'_id': ObjectId(model_id)})
-            return document
+            if (not document) and (local == True):
+                log.info('could not find model_id locally, searching remote repo')
+                document = self.remote_data_collection.find_one({'_id': ObjectId(model_id)})
+
+            if not document:
+                log.warning('Could not find model')
+
+        return document
  
 
     def set_baseline(self,signature):
@@ -241,7 +265,31 @@ class lifecycle_db:
         else:
             print('signature not found')
 
-    def compare_models(self,model_ref1, model_ref2):
+    def compare_models(self,model_sig1, model_sig2):
+        # pull models
+        model2 = self.get_model_data(signature = model_sig2)
+        model1 = self.get_model_data(signature = model_sig1)
+
+        comparison = {}
+        if model1 and model2:
+            # Compare structure
+            log.info(model1['structure'])
+            log.info(model2['structure'])
+
+            ddiff = DeepDiff(model1['structure'], model2['structure'])
+
+            if ddiff:
+                for i in ddiff:
+                    comparison.update({ i: len(ddiff[i]) } )
+
+        else:
+            log.info('model not found')        
+            
+        return comparison
+
+
+'''
+    def compare_values(self,model1, model2)
         new_model_data = self.get_model_data(signature_data['model_data'])
         if new_model_data == None:
             print ('no model data for : ', signature_data['model_data'])
@@ -264,3 +312,5 @@ class lifecycle_db:
 
         print(signature_data['username'], signature_data['organisation'])
         print(history)
+
+'''

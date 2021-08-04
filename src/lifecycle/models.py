@@ -8,6 +8,7 @@ from scipy.stats import skew
 
 import logging
 log = logging.getLogger(__name__)
+logging.basicConfig(filename='{}.log'.format(__name__), encoding='utf-8', level=logging.DEBUG)
 
 
 from lifecycle.database import lifecycle_db
