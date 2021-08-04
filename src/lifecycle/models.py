@@ -6,24 +6,15 @@ import matplotlib.pyplot as plt
 import hashlib
 from scipy.stats import skew
 
-
 from lifecycle.database import lifecycle_db
 
 class lifecycle:
-    def __init__(self, lifecycle_db, user, organisation):
-        self.lifecycle_db = lifecycle_db
-        self.user = user
-        self.organisation = organisation
-
-    def set_user(self, user):
-        self.user = user
-
-    def set_organisation(self,organisation):
-        self.organisation = organisation
+    def __init__(self):
+        pass
 
 
     # internal Layer Functions 
-    def create_layer_data(layer):
+    def create_layer_data(self,layer):
 
         # get structure array
         layer_structure  = {
@@ -49,18 +40,18 @@ class lifecycle:
 
         if len(weights) == 1:
         #    weight_x = np.ndarray.flatten(weights[0])
-            calc_weight_std = np.std(weights[0]).astype(float32)
-            calc_weight_mean = np.mean(weights[0]).astype(float32)
+            calc_weight_std = np.std(weights[0]).astype(float)
+            calc_weight_mean = np.mean(weights[0]).astype(float)
             calc_skew = skew(np.ndarray.flatten(weights[0]))
             calc_bias_std = 0
             calc_bias_mean = 0
 
         if len(weights) > 1:
-            calc_weight_std = np.std(weights[0]).astype(float32)
-            calc_weight_mean = np.mean(weights[0]).astype(float32)
+            calc_weight_std = np.std(weights[0]).astype(float)
+            calc_weight_mean = np.mean(weights[0]).astype(float)
             calc_skew = skew(np.ndarray.flatten(weights[0]))
-            calc_bias_std = np.std(weights[1]).astype(float32)
-            calc_bias_mean = np.mean(weights[1]).astype(float32)
+            calc_bias_std = np.std(weights[1]).astype(float)
+            calc_bias_mean = np.mean(weights[1]).astype(float)
             
         layer_values = {
             "weight_std" : calc_weight_std,
@@ -72,7 +63,7 @@ class lifecycle:
 
         return layer_structure, layer_values
 
-    def create_model_data(self, model):
+    def create_model_data(self, model, baseline=False, save=True):
         # initiate hashing function
         sha = hashlib.sha256()
 
@@ -91,8 +82,21 @@ class lifecycle:
 
         
         layer_data = {"structure":layer_structure_set, "data":layer_data_set}
+        signature = sha.hexdigest()
 
-        return sha.hexdigest(), layer_data
+        # Record the signature and model in memory if needed
+        if baseline:
+            self.baseline = [signature, layer_data]
+        
+        if save:
+            self.save = {'signature':signature,
+            'layer_model': layer_data}
+
+        return signature, layer_data
+
+    def get_baseline(self):
+        return self.baseline['signature'], self.baseline['layer_data']
+
 
 
 

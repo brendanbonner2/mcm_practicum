@@ -10,7 +10,8 @@ from bson.objectid import ObjectId
 
 
 class lifecycle_db:
-    def __init__(self, localclient=None, username=None, password=None):
+    def __init__(self, localclient=None, username=None, password=None,lifecycle=None,
+        user=None, organisation = None):
         if localclient:
             self.dbclient = pymongo.MongoClient(localclient)
         else:
@@ -20,13 +21,24 @@ class lifecycle_db:
             self.username = username
             self.password = password
             self.remote_ro = False
-
-
         else:
             self.username = 'readonly'
             self.password =  'modelpassword'
             self.remote_ro = True
 
+        self.lifecycle = lifecycle
+        self.user = user
+        self.organisation = organisation
+
+    def set_user(self, user):
+        self.user = user
+
+    def set_organisation(self,organisation):
+        self.organisation = organisation
+
+
+    def set_lifecycle(self, lifecycle):
+        self.lifecycle = lifecycle
 
     def get_username(self):
         return self.username
@@ -73,22 +85,28 @@ class lifecycle_db:
     def write_model_db(self,
         signature,
         model_data,
-        username = '',
-        organisation = '',
-        model_source='',
+        user = None,
+        organisation = None,
+        model_source=None,
         parent = '',
         local=True):
 
 
 
         if local:
-            print('writing to local repository')
+            #print('writing to local repository')
             db_data = self.local_data_collection
             db_sig = self.local_signature_collection
         else:
-            print('writing to remote repository')
+            #print('writing to remote repository')
             db_data = self.remote_data_collection
             db_sig = self.remote_signature_collection
+
+        if not user:
+            user = self.user
+
+        if not organisation:
+            organisation = self.organisation
 
         # Insert Signature to Database (signatures)
         if self.get_model(signature) == None:
@@ -100,7 +118,7 @@ class lifecycle_db:
             signature_data =  {
                 'signature': signature,
                 'parent': parent,
-                'username': username,
+                'username': user,
                 'organisation':organisation,
                 'model_source': model_source,
                 'model_data': model_id
@@ -115,31 +133,33 @@ class lifecycle_db:
 
 
     def push_model(self,model, local=True, parent=None,
-        username='', organisation = '', model_source=''):
+        user='', organisation = '', model_source=''):
 
-        signature, layer_data = self.create_model_data(model)
+        if self.lifecycle:
+            signature, layer_data = self.lifecycle.create_model_data(model)
 
-        self.write_model_db(
-            signature=signature,
-            model_data=layer_data,
-            parent=parent,
-            username=username,
-            organisation=organisation,
-            local=local,
-            model_source=model_source
-        )
-        return signature
+            self.write_model_db(
+                signature=signature,
+                model_data=layer_data,
+                parent=parent,
+                user=user,
+                organisation=organisation,
+                local=local,
+                model_source=model_source
+            )
+            return signature
+        else:
+            print('No model lifecycle set')
+            return None
 
 
 
     def get_model(self,signature, local=True):
-        print('looking for ', signature )
+        # print('looking for ', signature )
         
         if local:
-            db_data = self.local_data_collection
             db_sig = self.local_signature_collection
         else:
-            db_data = self.remote_data_collection
             db_sig = self.remote_signature_collection
 
         signature_data = db_sig.find_one({'signature': signature})
@@ -158,6 +178,8 @@ class lifecycle_db:
             db_data = self.remote_data_collection
 
         if signature:
+            print('signatture', signature)
+
             model_object = self.get_model(signature=signature, local=local)['model_data']
             document = db_data.find_one({'_id': model_object})
             return document
