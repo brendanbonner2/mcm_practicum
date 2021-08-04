@@ -7,6 +7,9 @@ import datetime
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+import logging
+log = logging.getLogger(__name__)
+
 
 
 class lifecycle_db:
@@ -50,13 +53,15 @@ class lifecycle_db:
         global remote_data_collection
         global remote_signature_collection
 
+        db_cluster= 'cluster0.7ilyj.mongodb.net'
+        
         # if username no provided, create a readonly client
-        mongodb_login = "mongodb+srv://{}:{}@cluster0.7ilyj.mongodb.net/test".format(self.username, self.password)
-
-
+        mongodb_login = "mongodb+srv://{}:{}@{}/test".format(self.username, self.password, db_cluster)
         dbclient_database   = self.dbclient["model_database"]
         self.local_data_collection         = dbclient_database["model_data"]
         self.local_signature_collection    = dbclient_database["signature"]
+
+        log.info('Setting Cloud DB to {} for user {}'.format(db_cluster,self.username))
 
         # Make sure signatures are unique on both
         try:
@@ -65,7 +70,7 @@ class lifecycle_db:
                 unique=True
             )
         except:
-            print('cannot set unique local database')
+            log.warning('cannot set unique local database')
 
         remote_client       = pymongo.MongoClient(mongodb_login)
         dbclient_database_r = remote_client["model_database"]
@@ -79,6 +84,7 @@ class lifecycle_db:
                 unique=True
             )
         except:
+            log.warning('Cannot set unique signature in cloud database')
             no_db = True
 
 
@@ -94,11 +100,11 @@ class lifecycle_db:
 
 
         if local:
-            #print('writing to local repository')
+            log.info('writing to local repository')
             db_data = self.local_data_collection
             db_sig = self.local_signature_collection
         else:
-            #print('writing to remote repository')
+            log.info('writing to remote repository')
             db_data = self.remote_data_collection
             db_sig = self.remote_signature_collection
 
@@ -109,10 +115,10 @@ class lifecycle_db:
             organisation = self.organisation
 
         # Insert Signature to Database (signatures)
-        if self.get_model(signature) == None:
+        if self.get_signature(signature) == None:
             x = db_data.insert_one(model_data)
             model_id = x.inserted_id
-            # print(model_id, 'for sig: ', signature)
+            log.info(model_id, 'for sig: ', signature)
 
             # Inset Model Data to Database (modeldata)
             signature_data =  {
@@ -128,7 +134,7 @@ class lifecycle_db:
             signature_model_id = x.inserted_id
             return signature_model_id
         else:
-            print('signature: ', signature, ' already in database')
+            log.warning('signature: {} already in database'.format(signature))
             return None
 
 
@@ -149,12 +155,12 @@ class lifecycle_db:
             )
             return signature
         else:
-            print('No model lifecycle set')
+            log.warning('No model lifecycle set')
             return None
 
 
 
-    def get_model(self,signature, local=True):
+    def get_signature(self,signature, local=True):
         # print('looking for ', signature )
         
         if local:
@@ -180,7 +186,7 @@ class lifecycle_db:
         if signature:
             print('signatture', signature)
 
-            model_object = self.get_model(signature=signature, local=local)['model_data']
+            model_object = self.get_signature(signature=signature, local=local)['model_data']
             document = db_data.find_one({'_id': model_object})
             return document
         else:
@@ -188,4 +194,73 @@ class lifecycle_db:
             return document
  
 
+    def set_baseline(self,signature):
+        # get local signature
+        signature = self.get_signature(signature=signature, local=True)
+        if signature == None:
+            # see if signature in repository
+                signature = self.get_signature(signature=signature, local=False)
 
+
+
+
+# Get model and write to layer
+
+    def show_history(self,signature):
+
+        log.info("Getting Signature: {} ".format(signature))
+        signature_data = self.get_signature(signature)
+        if signature_data:
+
+            # Print current signature
+            print( '{}, Creator: {},{}'.format(
+                signature_data['_id'].generation_time,
+                signature_data['username'],
+                signature_data['organisation']
+                )
+            )
+
+
+            history = []
+            while signature_data['parent'] != None:
+
+                new_model_ref = signature_data['model_data']
+
+                # get model
+                signature_data = self.get_signature(signature_data['parent'])
+
+                # Print current signature
+                print( '{}, Creator: {},{}'.format(
+                    signature_data['_id'].generation_time,
+                    signature_data['username'],
+                    signature_data['organisation']
+                    )
+                )
+                model_ref = signature_data['model_data']
+
+        else:
+            print('signature not found')
+
+    def compare_models(self,model_ref1, model_ref2):
+        new_model_data = self.get_model_data(signature_data['model_data'])
+        if new_model_data == None:
+            print ('no model data for : ', signature_data['model_data'])
+        else:
+            history_layer = []
+            data = new_model_data['data']
+            for key, value in data.items():
+                if (old_data[key]['weight_std'] == 0):
+                    history_layer.append(old_data[key]['weight_std'])
+                else:
+                    history_layer.append(
+                        value['weight_std']  / old_data[key]['weight_std']
+                    )
+
+            history.append(history_layer)
+            old_data = new_model_data['data']
+
+
+
+
+        print(signature_data['username'], signature_data['organisation'])
+        print(history)

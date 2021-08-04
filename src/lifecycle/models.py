@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import hashlib
 from scipy.stats import skew
 
+import logging
+log = logging.getLogger(__name__)
+
+
 from lifecycle.database import lifecycle_db
 
 class lifecycle:
@@ -86,9 +90,11 @@ class lifecycle:
 
         # Record the signature and model in memory if needed
         if baseline:
+            log.info('saving model as baseline')
             self.baseline = [signature, layer_data]
         
         if save:
+            log.info('saving model to lifecycle')
             self.save = {'signature':signature,
             'layer_model': layer_data}
 
@@ -97,6 +103,8 @@ class lifecycle:
     def get_baseline(self):
         return self.baseline['signature'], self.baseline['layer_data']
 
+    def set_baseline(self, signature,model):
+        return self.baseline['signature'], self.baseline['layer_data']
 
 
 

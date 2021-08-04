@@ -1,0 +1,9 @@
+Model Lifecycle
+  new/ref: Set Baseline
+    (push)
+  [train]Train Model
+    Save Model Locally
+      (train)
+  [publish] Publish Model
+    [push] Push to Repository
+    

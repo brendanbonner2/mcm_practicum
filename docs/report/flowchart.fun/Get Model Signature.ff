@@ -1,0 +1,12 @@
+Get Model Signature
+    Get Structure
+        Input/Output Shape
+        Parameters
+    Get Weights & Biases
+        Get Layer Weights
+        Calulate StdDev
+        Calculate Skew
+    Generate Signature
+        SHA256 Model
+        SHA256 Layers
+        Generate Digest
