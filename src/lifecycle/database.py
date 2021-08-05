@@ -118,7 +118,7 @@ class lifecycle_db:
             organisation = self.organisation
 
         # Insert Signature to Database (signatures)
-        if self.get_signature(signature) == None:
+        if self.get_signature(signature,local=local) == None:
             x = db_data.insert_one(model_data)
             model_id = x.inserted_id
 
@@ -146,10 +146,12 @@ class lifecycle_db:
 
 
     def push_model(self,model, local=True, parent=None,
-        user='', organisation = '', model_source=''):
+        user='', organisation = '', model_source='', useParent=False):
 
         if self.lifecycle:
             signature, layer_data = self.lifecycle.create_model_data(model)
+            if useParent:
+                parent = self.parent
 
             self.write_model_db(
                 signature=signature,
@@ -160,6 +162,8 @@ class lifecycle_db:
                 local=local,
                 model_source=model_source
             )
+            
+            self.parent = signature
             return signature
         else:
             log.warning('No model lifecycle set')
@@ -351,30 +355,38 @@ class lifecycle_db:
         return history_layer
 
 
+    def push_to_cloud(self, signature):
+        # Take a local model, and push to the cloud, useful for baselines
 
-'''
-    def compare_values(self,model1, model2)
-        new_model_data = self.get_model_data(signature_data['model_data'])
-        if new_model_data == None:
-            print ('no model data for : ', signature_data['model_data'])
+        # Check if signature already exist in cloud
+        remote_signature = self.get_signature(signature,local=False)
+        if remote_signature:
+            log.info('Pushed signature already in cloud')
         else:
-            history_layer = []
-            data = new_model_data['data']
-            for key, value in data.items():
-                if (old_data[key]['weight_std'] == 0):
-                    history_layer.append(old_data[key]['weight_std'])
-                else:
-                    history_layer.append(
-                        value['weight_std']  / old_data[key]['weight_std']
+            local_signature = self.get_signature(signature)
+            if local_signature:
+                local_model_id = local_signature['model_data']
+                log.info(local_model_id)
+                local_model = self.get_model_data(local_model_id)
+                if local_model:
+                    log.info('Local Model found for push to cloud')
+                    # remove local database ID
+                    local_model.pop('_id', None)
+                    log.info('Writing Model with Signature {}'.format(signature))
+                    self.write_model_db(
+                        signature=signature,
+                        model_data=local_model,
+                        parent=local_signature['parent'],
+                        user=self.user,
+                        organisation=self.organisation,
+                        local=False,
+                        model_source=local_signature['model_source']
                     )
+                else:
+                    log.warning('model not found in local database')
+            else:
+                log.warning('signature not found in local database, push required')
 
-            history.append(history_layer)
-            old_data = new_model_data['data']
+            
 
-
-
-
-        print(signature_data['username'], signature_data['organisation'])
-        print(history)
-
-'''
+                
