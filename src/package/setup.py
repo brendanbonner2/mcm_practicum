@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="lifecycle-pkg-bonnerb2",
+    name="lifecycle",
     version="0.0.1",
     author="Brendan Bonner",
     author_email="brendan.bonner2@mail.dcu.ie",
@@ -23,4 +23,7 @@ setuptools.setup(
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
+        install_requires=[
+        'DeepDiff',
+        'pymongo',
 )
