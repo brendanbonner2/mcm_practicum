@@ -1,15 +1,15 @@
 # database functions for the lifecycle management
 
 from re import X
-import deepdiff
-from deepdiff import diff
 import pymongo
-from deepdiff import DeepDiff
+from deepdiff import DeepDiff, model
 
-from pymongo import MongoClient
 from bson.objectid import ObjectId
+import numpy as np
 
 import logging
+
+from tensorflow.python.keras.backend import sign
 log = logging.getLogger(__name__)
 logging.basicConfig(filename='{}.log'.format(__name__), encoding='utf-8', level=logging.DEBUG)
 
@@ -230,40 +230,74 @@ class lifecycle_db:
 
 # Get model and write to layer
 
-    def show_history(self,signature):
+    def get_history(self,signature):
 
         log.info("Getting Signature: {} ".format(signature))
         signature_data = self.get_signature(signature)
         if signature_data:
 
             # Print current signature
-            print( '{}, Creator: {},{}'.format(
-                signature_data['_id'].generation_time,
-                signature_data['username'],
-                signature_data['organisation']
-                )
-            )
-
-
             history = []
+        
+            history_entry = {
+                    'signature':    signature_data['signature'],
+                    'timestamp':    signature_data['_id'].generation_time,
+                    'username':     signature_data['username'],
+                    'organisation': signature_data['organisation'],
+                    'structure':    None,
+                    'data':         None
+                }
+            history.append ( history_entry )
+
+
             while signature_data['parent'] != None:
 
-                new_model_ref = signature_data['model_data']
+                changes = self.compare_models(signature,signature_data['parent'])
+                structural_changes = len(changes['structure'])
+                data_changes = np.prod(changes['data'])
 
                 # get model
                 signature_data = self.get_signature(signature_data['parent'])
+                signature = signature_data['signature']
 
                 # Print current signature
-                print( '{}, Creator: {},{}'.format(
-                    signature_data['_id'].generation_time,
-                    signature_data['username'],
-                    signature_data['organisation']
-                    )
-                )
-                model_ref = signature_data['model_data']
+                history_entry = {
+                        'signature':    signature_data['signature'],
+                        'timestamp':    signature_data['_id'].generation_time,
+                        'username':     signature_data['username'],
+                        'organisation': signature_data['organisation'],
+                        'structure':    structural_changes,
+                        'data':         data_changes
+                }
+                history.append ( history_entry )
+
+
+
+            return history
 
         else:
             print('signature not found')
+
+
+
+
+# Get model and write to layer
+
+    def get_ancestor(self,signature):
+
+        log.info("Getting Ancestor: {} ".format(signature))
+        signature_data = self.get_signature(signature)
+        if signature_data:
+            while signature_data['parent'] != None:
+                signature_data = self.get_signature(signature_data['parent'])
+
+            return signature_data['signature']
+
+        else:
+            print('signature not found')
+
+
+
 
     def compare_models(self,model_sig1, model_sig2):
         # pull models
@@ -271,21 +305,51 @@ class lifecycle_db:
         model1 = self.get_model_data(signature = model_sig1)
 
         comparison = {}
+        comp_struct = {}
+
         if model1 and model2:
             # Compare structure
-            log.info(model1['structure'])
-            log.info(model2['structure'])
-
+            log.info('Comparing Model Structures')
             ddiff = DeepDiff(model1['structure'], model2['structure'])
 
+            log.info(ddiff)
+            # put ddif in dictionary
             if ddiff:
                 for i in ddiff:
-                    comparison.update({ i: len(ddiff[i]) } )
+                    comp_struct.update({ i: len(ddiff[i]) } )
+
+            comp_data = self.compare_model_data(model1['data'], model2['data'])
+
+            log.info('Comparing Model Values')
+            comparison.update({'structure':comp_struct, 'data': comp_data})
 
         else:
             log.info('model not found')        
-            
+
         return comparison
+
+
+    # Compare two pulled sets for equivilance of stdev and bias
+    def compare_model_data(self, model_data_1, model_data_2):
+        log.info('Comparing model data')
+        history_layer = []
+
+        # pick the shortest model for comparison layers
+        if len(model_data_2) > len(model_data_1):
+            ref_model = model_data_1
+        else:
+            ref_model = model_data_2
+
+        for key, value in ref_model.items():
+            if (model_data_1[key]['weight_std'] == 0) and (model_data_2[key]['weight_std'] == 0):
+                history_layer.append(1)
+            else:
+                history_layer.append(
+                    model_data_2[key]['weight_std']  / model_data_1[key]['weight_std']
+                )
+
+        return history_layer
+
 
 
 '''

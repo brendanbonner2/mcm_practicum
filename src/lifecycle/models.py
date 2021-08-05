@@ -102,10 +102,10 @@ class lifecycle:
         return signature, layer_data
 
     def get_baseline(self):
-        return self.baseline['signature'], self.baseline['layer_data']
+        return self.baseline['signature']
 
-    def set_baseline(self, signature,model):
-        return self.baseline['signature'], self.baseline['layer_data']
+    def set_baseline(self, signature):
+        self.baseline['signature'] = signature
 
 
 
