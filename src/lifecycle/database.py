@@ -2,7 +2,9 @@
 
 from re import X
 import pymongo
-from deepdiff import DeepDiff, model
+from deepdiff import DeepDiff
+import numpy as np
+
 
 from bson.objectid import ObjectId
 import numpy as np
@@ -12,6 +14,10 @@ import logging
 from tensorflow.python.keras.backend import sign
 log = logging.getLogger(__name__)
 logging.basicConfig(filename='{}.log'.format(__name__), encoding='utf-8', level=logging.DEBUG)
+
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.pyplot import figure
 
 
 
@@ -258,7 +264,7 @@ class lifecycle_db:
 
                 changes = self.compare_models(signature,signature_data['parent'])
                 structural_changes = len(changes['structure'])
-                data_changes = np.prod(changes['data'])
+                data_changes = {'weight':np.prod(changes['data']['weight']), 'skew':np.prod(changes['data']['skew'])}
 
                 # get model
                 signature_data = self.get_signature(signature_data['parent'])
@@ -274,8 +280,6 @@ class lifecycle_db:
                         'data':         data_changes
                 }
                 history.append ( history_entry )
-
-
 
             return history
 
@@ -336,7 +340,8 @@ class lifecycle_db:
     # Compare two pulled sets for equivilance of stdev and bias
     def compare_model_data(self, model_data_1, model_data_2):
         log.info('Comparing model data')
-        history_layer = []
+        weight_history = []
+        skew_history = []
 
         # pick the shortest model for comparison layers
         if len(model_data_2) > len(model_data_1):
@@ -345,14 +350,23 @@ class lifecycle_db:
             ref_model = model_data_2
 
         for key, value in ref_model.items():
-            if (model_data_1[key]['weight_std'] == 0) and (model_data_2[key]['weight_std'] == 0):
-                history_layer.append(1)
+            # Compare Weights
+            if (model_data_1[key]['weight_std'] == 0) or (model_data_2[key]['weight_std'] == 0):
+                weight_history.append(1)
             else:
-                history_layer.append(
+                weight_history.append(
                     model_data_2[key]['weight_std']  / model_data_1[key]['weight_std']
                 )
+            
+            # Compare Skew
+            if (model_data_1[key]['skew'] == 0) or (model_data_2[key]['skew'] == 0):
+                skew_history.append(1)
+            else:
+                skew_history.append(
+                    model_data_2[key]['skew']  / model_data_1[key]['skew']
+                )
 
-        return history_layer
+        return {'weight':weight_history, 'skew':skew_history}
 
 
     def push_to_cloud(self, signature):
@@ -387,6 +401,72 @@ class lifecycle_db:
             else:
                 log.warning('signature not found in local database, push required')
 
-            
+    def plot_history(self, signature):
 
-                
+        local_history = self.get_history(signature)
+
+        weights = []
+        skews = []
+        dates = []
+
+        for x in local_history:
+            dates.append(x['timestamp'])
+            if x['data']:
+                weights.append(x['data']['weight'] * 100)
+                skews.append(x['data']['skew'] * 100)
+
+            else:
+                weights.append(0)
+                skews.append(0)
+
+        plt_dates = mdates.date2num(dates)
+
+        plt.rcParams["figure.figsize"] = (10,5)
+        fig, ax = plt.subplots()
+        ax2 = ax.twinx()
+        ax.set_ylim([0,100])
+        ax2.set_ylim([-200,200])
+
+        ax.plot_date(plt_dates, weights, 'b-')
+        ax2.plot_date(plt_dates, skews)
+        xfmt = mdates.DateFormatter('%d-%m %H:%M')
+        ax.xaxis.set_major_formatter(xfmt)
+
+        ax.set_xlabel('Layers')
+        
+        ax.set_ylabel('Weight Change %')
+        ax2.set_ylabel('Skew Change %')
+        ax.set_title('Model Training')
+
+        plt.show()
+
+    def plot_changes(self,sig1,sig2):
+        model_diff = self.compare_models(sig1,sig2)
+
+        data = []
+        for x in model_diff['data']['weight']:
+            if x:
+                data.append(x * 100)
+            else:
+                data.append(0)
+
+
+
+        # Example data
+        y_pos = np.arange(len(data))
+
+        plt.rcParams["figure.figsize"] = (5,10)
+        fig, ax = plt.subplots()
+        ax.barh(y_pos, data, align='center')
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(y_pos)
+        ax.set_ylabel('Layers')
+        ax.set_xlabel('Change %')
+
+
+        if len(model_diff['structure']) == 0:
+            ax.set_title('Model : No structural changes')
+        else:
+            ax.set_title('Model : Structural changes found')
+
+        plt.show()
