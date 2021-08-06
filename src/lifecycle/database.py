@@ -2,7 +2,7 @@
 
 from re import X
 import pymongo
-from deepdiff import DeepDiff
+from deepdiff import DeepDiff, model
 import numpy as np
 
 
@@ -156,6 +156,7 @@ class lifecycle_db:
 
         if self.lifecycle:
             signature, layer_data = self.lifecycle.create_model_data(model)
+
             if useParent:
                 parent = self.parent
 
@@ -240,35 +241,28 @@ class lifecycle_db:
 
 # Get model and write to layer
 
-    def get_history(self,signature):
+    def get_history(self,search_sig, full_data=False):
 
-        log.info("Getting Signature: {} ".format(signature))
-        signature_data = self.get_signature(signature)
+        log.info("Getting Signature: {} ".format(search_sig))
+        signature_data = self.get_signature(search_sig)
         if signature_data:
 
             # Print current signature
             history = []
-        
-            history_entry = {
-                    'signature':    signature_data['signature'],
-                    'timestamp':    signature_data['_id'].generation_time,
-                    'username':     signature_data['username'],
-                    'organisation': signature_data['organisation'],
-                    'structure':    None,
-                    'data':         None
-                }
-            history.append ( history_entry )
+            last_loop = False
 
+            while True:
 
-            while signature_data['parent'] != None:
-
-                changes = self.compare_models(signature,signature_data['parent'])
-                structural_changes = len(changes['structure'])
-                data_changes = {'weight':np.prod(changes['data']['weight']), 'skew':np.prod(changes['data']['skew'])}
-
-                # get model
-                signature_data = self.get_signature(signature_data['parent'])
-                signature = signature_data['signature']
+                # compare with parent
+                if signature_data['parent']:
+                    changes = self.compare_models(search_sig,signature_data['parent'])
+                    structural_diff = len(changes['structure'])
+                    data_diff = {'weight':np.prod(changes['data']['weight']), 'skew':np.prod(changes['data']['skew'])}
+                else:
+                    changes = {'structure':{}, 'data':{}}
+                    structural_diff = 0
+                    data_diff = {'weight':1, 'skew':1}
+                    last_loop = True
 
                 # Print current signature
                 history_entry = {
@@ -276,12 +270,28 @@ class lifecycle_db:
                         'timestamp':    signature_data['_id'].generation_time,
                         'username':     signature_data['username'],
                         'organisation': signature_data['organisation'],
-                        'structure':    structural_changes,
-                        'data':         data_changes
+                        'structural_diff':    structural_diff,
+                        'data_diff':         data_diff,
+                        'structure': {},
+                        'data': {}
                 }
-                history.append ( history_entry )
 
-            return history
+                if full_data:
+                    log.info('getting hist model based on signature {}'.format(search_sig))
+                    model_data = self.get_model_data(signature=search_sig)
+                    model_data.pop('_id', None)
+
+                    history_entry['structure'] = changes['structure']                    
+                    history_entry['data'] = model_data['data']
+                    log.info(model  )
+
+                history.append( history_entry )
+                if last_loop:
+                    return history
+                
+                # get next model
+                signature_data = self.get_signature(signature_data['parent'])
+                search_sig = signature_data['signature']
 
         else:
             print('signature not found')
@@ -320,10 +330,13 @@ class lifecycle_db:
             log.info('Comparing Model Structures')
             ddiff = DeepDiff(model1['structure'], model2['structure'])
 
-            log.info(ddiff)
+            log.info(len(ddiff))
             # put ddif in dictionary
+            comp_struct = {}
             if ddiff:
+                
                 for i in ddiff:
+                    
                     comp_struct.update({ i: len(ddiff[i]) } )
 
             comp_data = self.compare_model_data(model1['data'], model2['data'])
@@ -411,10 +424,9 @@ class lifecycle_db:
 
         for x in local_history:
             dates.append(x['timestamp'])
-            if x['data']:
-                weights.append(x['data']['weight'] * 100)
-                skews.append(x['data']['skew'] * 100)
-
+            if x['data_diff']:
+                weights.append(x['data_diff']['weight'] * 100)
+                skews.append(x['data_diff']['skew'] * 100)
             else:
                 weights.append(0)
                 skews.append(0)
@@ -462,6 +474,8 @@ class lifecycle_db:
         ax.set_yticklabels(y_pos)
         ax.set_ylabel('Layers')
         ax.set_xlabel('Change %')
+
+        ax.set_xlim([np.min(data), np.max(data)])
 
 
         if len(model_diff['structure']) == 0:

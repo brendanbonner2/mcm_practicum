@@ -11,10 +11,16 @@ The first part of the delivery required that a model, in this case a CNN model i
 
 and within each of the layers, there are is a series of layers that, depending on type, will contain a series of tuples that have a single of multi-dimensional series of weights, plus a set of biases. it is within these layers that we will extract the information. As there is potentially a lot of information in the layer, we attempted to reduce this by extracting two identifying elements
 
+Skew:
+\[ G_1=\frac{k_3}{k_2^{3/2}}=\frac{\sqrt{N(N-1)}}{N-2}\frac{m_3}{m_2^{3/2}}. \]
+
+Standard Deviation of N Numbers
+\[ \frac1N\sum_{i=1}^n\left(x^i-\overline x\right)^2 \]
+
 \begin{table}[h]
     \caption{Values generated from evaluated model}
     \setlength\tabcolsep{0pt} % make LaTeX figure out intercolumn spacing
-    \begin{tabular} { p{0.25\linewidth}  p{0.7\linewidth} }
+    \begin{tabular}{@{} |p{2cm}|p{6.5cm}| @{}}
         Mean    & The average value of all layers across all dimension \\ \hline 
         StdDev  & An indication of the deviation of values, to assist in seeing how the values are weighted \\ \hline
         Histogram & A Histogram of the distribution of values across the layer. This will assist in giving a more informed distribution. As there are a large number of potential entries in the dense layers, from binary to minute changes in float values, the Histogram will be split between the values smallest non-zero granularity and the largest value across 10 bins. \\ \hline
