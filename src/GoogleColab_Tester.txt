@@ -1,0 +1,26 @@
+
+!pip install DeepDiff
+!pip install dnspython
+
+!pip install lifecycle-0.0.2.tar.gz
+
+
+from lifecycle import lifecycle_model
+from lifecycle import lifecycle_db
+
+
+local_db_cluster = 'cluster0.7ilyj.mongodb.net'
+local_username = 'projectUser'
+local_password = 'DCUpassword'
+localcloudclient = "mongodb+srv://{}:{}@{}/local_test".format(
+    local_username, local_password, local_db_cluster
+    )
+
+my_life = lifecycle_model()
+mydb = lifecycle_db (
+    localclient=localcloudclient,
+    username = 'projectUser',password = 'DCUpassword',
+    user='brendan.bonner2@mail.dcu.ie', organisation='Dublin City University',
+    lifecycle=my_life)
+mydb.init_model_db()
+

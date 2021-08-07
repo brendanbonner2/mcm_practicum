@@ -25,28 +25,30 @@ def init_model_db(self):
     log.info('Setting Cloud DB to {} for user {}'.format(db_cluster,self.username))
 
     # Make sure signatures are unique on both
-    try:
-        self.local_signature_collection.create_index(
-            [("signature", pymongo.DESCENDING)],
-            unique=True
-        )
-    except:
-        log.warning('cannot set unique local database')
+    if self.create_index:
+        try:
+            self.local_signature_collection.create_index(
+                [("signature", pymongo.DESCENDING)],
+                unique=True
+            )
+        except:
+            log.warning('Cannot set Index for Local Database')
 
     remote_client       = pymongo.MongoClient(mongodb_login)
     dbclient_database_r = remote_client["model_database"]
     self.remote_data_collection       = dbclient_database_r["model_data"]
     self.remote_signature_collection  = dbclient_database_r["signature"]
     
-    try:
-        # Only if there is a remote account, allow writing, otherwise read only
-        self.remote_signature_collection.create_index(
-            [("signature", pymongo.DESCENDING)],
-            unique=True
-        )
-    except:
-        log.warning('Cannot set unique signature in cloud database')
-        no_db = True
+    if self.create_index:
+
+        try:
+            # Only if there is a remote account, allow writing, otherwise read only
+            self.remote_signature_collection.create_index(
+                [("signature", pymongo.DESCENDING)],
+                unique=True
+            )
+        except:
+            log.warning('Cannot set Index for Remote Database')
 
 
 def write_model_db(self,

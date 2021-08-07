@@ -3,7 +3,7 @@ import pymongo
 
 class lifecycle_db:
     def __init__(self, localclient=None, username=None, password=None,lifecycle=None,
-        user=None, organisation = None):
+        user=None, organisation = None, create_index=False):
         if localclient:
             self.dbclient = pymongo.MongoClient(localclient)
         else:
@@ -21,6 +21,7 @@ class lifecycle_db:
         self.lifecycle = lifecycle
         self.user = user
         self.organisation = organisation
+        self.create_index = create_index
 
     #Imported methods
     from ._database import init_model_db, write_model_db, get_model_data, get_signature, push_model, push_to_cloud
