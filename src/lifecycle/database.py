@@ -456,7 +456,7 @@ class lifecycle_db:
         model_diff = self.compare_models(sig1,sig2)
 
         data = []
-        for x in model_diff['data']['weight']:
+        for x in model_diff['data']['skew']:
             if x:
                 data.append(x * 100)
             else:
@@ -469,13 +469,14 @@ class lifecycle_db:
 
         plt.rcParams["figure.figsize"] = (5,10)
         fig, ax = plt.subplots()
-        ax.barh(y_pos, data, align='center')
+        ax.barh(y_pos, data, align='center', fc="lightblue", alpha=0.9)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(y_pos)
         ax.set_ylabel('Layers')
-        ax.set_xlabel('Change %')
+        ax.set_xlabel('Deviation %')
 
-        ax.set_xlim([np.min(data), np.max(data)])
+        leeway = 0.05
+        ax.set_xlim([np.min(data)-leeway, np.max(data)+leeway])
 
 
         if len(model_diff['structure']) == 0:
