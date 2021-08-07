@@ -1,21 +1,31 @@
 \section{Method}
-Method should outline how the task/experiment was carried out, including rationale for any decisions made. Details of any equipment and subjects used should be also included. Basically, you should include enough information, so that the reader could duplicate as much of the experimental conditions or design details as possible.
+The practicum was divided into three subareas, focusing on disection of the model and extrapolating the summary that would be used to robustly identify the internal structure of the model to enable the model synopsis to be stored in in a repository. The second section was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discoving the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
 
-\subsection{Reducing Model without Losing Character}
-The first part of the delivery required that a model, in this case a CNN model in Keras, could be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model is an 
+The final method investigated in the practicum was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
+
+\subsection{Developing a Robust Model Synopsis}
+The first part of the delivery required that a model, in this case a CNN model in Keras, could be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. A model consists of:
+
 \begin{enumerate}
-\item input shape
-\item series of dense layers
-\item output layers
+\item An Input Shape. In the case of vision applications, this consists of an image with width, height and colour depth, which is usually three.
+\item Dense Application Layers, such as Pooling, Convolution or reduction layers which can contain a heavily connected series of filters, activation functions and weight and bias metrics.
+\item Output layers. One or a number of prediction or output layers. In transfer learning, the output layers can change based on the prediction expanding or contracting.
 \end{enumerate}
 
-and within each of the layers, there are is a series of layers that, depending on type, will contain a series of tuples that have a single of multi-dimensional series of weights, plus a set of biases. it is within these layers that we will extract the information. As there is potentially a lot of information in the layer, we attempted to reduce this by extracting two identifying elements
+To be able to break down the model, it is nevessary to examing the layers. Within each of the layers, there are is a series of sublayers that. In all cases, these are in the form of series of tuples that have a single or multi-dimensional series of weights, plus a set of biases. Theoretically, these values can contain any number, while on inspection, the majority are within the bounds of a number series that can be tuned up or down in very small increments. it is within these layers that we will extract the layer identification information. 
+
+For the benefit of breaking down a full layer across all dimensions, we examined a number of mathmatical options to identify the data underneath. It was important at this stage to focus on the minimal amount of information that would enable a unique signature to be generated. Experiments were completed to give an indication of distribution of data, which would assist in visualising the direction of training, in the form of layer-wide histograms or each dimension, and producing a \textit{histogram of gradients}-style overview. These were reduced in favour of two elements - Standard Deviation and Skew.
 
 Skew:
 \[ G_1=\frac{k_3}{k_2^{3/2}}=\frac{\sqrt{N(N-1)}}{N-2}\frac{m_3}{m_2^{3/2}}. \]
 
 Standard Deviation of N Numbers
 \[ \frac1N\sum_{i=1}^n\left(x^i-\overline x\right)^2 \]
+
+Of all the averaging functions avaiable, the implementation of Standard Deviation in the python numpy library was able to reduce every single element to a single 64bit float. A second indication for skew was used to identify the drift of the standard deviation direction, and is included to ensure that movement of elements that retain the same Standard Deviation will not break the soltion.
+
+\subsection{Generating a Unique signature}
+Once we had every layer reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. 
 
 \begin{table}[h]
     \caption{Values generated from evaluated model}
