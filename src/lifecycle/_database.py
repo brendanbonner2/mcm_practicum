@@ -97,6 +97,10 @@ def write_model_db(self,
 
         x = db_sig.insert_one(signature_data)
         signature_model_id = x.inserted_id
+
+        # set current as parent
+        self.parent = signature_model_id
+
         return signature_model_id
     else:
         log.warning('signature: {} already in database'.format(signature))
@@ -123,6 +127,7 @@ def push_model(self,model, local=True, parent=None,
         )
         
         self.parent = signature
+        
         return signature
     else:
         log.warning('No model lifecycle set')
