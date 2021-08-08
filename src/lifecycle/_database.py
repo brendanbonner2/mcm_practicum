@@ -127,7 +127,7 @@ def push_model(self,model, local=True, parent=None,
         )
         
         self.parent = signature
-        
+
         return signature
     else:
         log.warning('No model lifecycle set')
@@ -229,3 +229,17 @@ def push_to_cloud(self, signature):
         else:
             log.warning('signature not found in local database, push required')
 
+    
+def family_tree(self, root, tab=0, local=True):
+
+    if local:
+        db_data = self.local_data_collection
+    else:
+        db_data = self.remote_data_collection
+
+    print('{}{}'.format(('\t' * int(tab)), root))
+    child = db_data.find({'parent':root})
+    for i in child:
+        if i:
+            self.family_tree(i['signature'], tab + 1)
+        
