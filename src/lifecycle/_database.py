@@ -18,7 +18,7 @@ def init_model_db(self):
     
     # if username no provided, create a readonly client
     mongodb_login = "mongodb+srv://{}:{}@{}/test".format(self.username, self.password, db_cluster)
-    dbclient_database   = self.dbclient["model_database"]
+    dbclient_database   = self.dbclient["local_model_database"]
     self.local_data_collection         = dbclient_database["model_data"]
     self.local_signature_collection    = dbclient_database["signature"]
 
@@ -98,8 +98,13 @@ def write_model_db(self,
         x = db_sig.insert_one(signature_data)
         signature_model_id = x.inserted_id
 
-        # set current as parent
-        self.parent = signature_model_id
+
+        if local:
+            # set current as parent
+            self.parent = signature_model_id
+        else:
+            # set current as parent
+            self.baseline = signature_model_id
 
         return signature_model_id
     else:
@@ -126,7 +131,10 @@ def push_model(self,model, local=True, parent=None,
             model_source=model_source
         )
         
-        self.parent = signature
+        if local == True:
+            self.parent = signature
+        else:
+            self.baseline = signature
 
         return signature
     else:
@@ -187,14 +195,14 @@ def get_model_data(self, model_id=None, signature=None, local=True):
 
 def get_baseline(self):
     # get local signature
-    return self.signature
+    return self.baseline
 
 def set_baseline(self,signature):
     # get local signature
-    self.signature = self.get_signature(signature=signature, local=True)
-    if self.signature == None:
+    self.baseline = self.get_signature(signature=signature, local=True)
+    if self.baseline == None:
         # see if signature in repository
-            self.signature = self.get_signature(signature=signature, local=False)
+            self.baseline = self.get_signature(signature=signature, local=False)
 
 
 def push_to_cloud(self, signature):
@@ -233,9 +241,9 @@ def push_to_cloud(self, signature):
 def family_tree(self, root, tab=0, local=True):
 
     if local:
-        db_data = self.local_data_collection
+        db_data = self.local_signature_collection
     else:
-        db_data = self.remote_data_collection
+        db_data = self.remote_signature_collection
 
     print('{}{}'.format(('\t' * int(tab)), root))
     child = db_data.find({'parent':root})

@@ -39,3 +39,4 @@ kaggle*.zip
 *.fls
 .DS_Store
 Icon?
+lifecycle.egg-info

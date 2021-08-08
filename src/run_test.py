@@ -1,29 +1,39 @@
-from lifecycle import database
-from lifecycle import models
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+from lifecycle import lifecycle_db
+from lifecycle import lifecycle_model
 
 
 %load_ext autoreload
 %autoreload 2
-from lifecycle import database
 
-mydb = database.lifecycle_db (username = 'projectUser',password = 'DCUpassword')
+#### Lifecycle Change: Create a classes
+
+#!pip install DeepDiff
+#!pip install dnspython
+
+!pip install lifecycle-0.0.3.tar.gz
+
+
+from lifecycle import lifecycle_model
+from lifecycle import lifecycle_db
+
+
+# local_db_cluster = 'cluster0.7ilyj.mongodb.net'
+# local_username = 'projectUser'
+# local_password = 'DCUpassword'
+# localcloudclient = "mongodb+srv://{}:{}@{}/local_test".format(
+#     local_username, local_password, local_db_cluster
+#     )
+
+my_life = lifecycle_model()
+mydb = lifecycle_db (
+#    localclient=localcloudclient,
+    username = 'projectUser',password = 'DCUpassword',
+    user='brendan.bonner2@mail.dcu.ie', organisation='Dublin City University',
+    lifecycle=my_life)
 mydb.init_model_db()
-
-
-
-bb_username = 'brendan.bonner@mail.dcu.ie'
-bb_organisation = 'DCU'
-bb_model_source = 'created in python'
-
-bb_username = 'brendan.bonner@mail.dcu.ie'
-bb_organisation = 'DCU'
-bb_model_source = 'created in python'
-
-mongodb_username = 'projectUser'
-mongodb_password = 'DCUpassword'
-
-
-
 
 # Initialise Databases
 
@@ -45,26 +55,6 @@ model_vgg16_imagenet = tf.keras.applications.VGG16(
     classes=1000
 )
 
-
-model_vgg16_test = tf.keras.applications.VGG16(
-    include_top=True,
-    weights="imagenet",
-    input_tensor=None,
-    input_shape=None,
-    pooling=None,
-    classes=1000
-)
-
-model_resnet50 = tf.keras.applications.ResNet50(
-    include_top=True,
-    weights=None,
-    input_tensor=None,
-    input_shape=None,
-    pooling=None,
-    classes=500
-)
-
-
 model_resnet50_imagenet = tf.keras.applications.ResNet50(
     include_top=True,
     weights='imagenet',
@@ -74,30 +64,9 @@ model_resnet50_imagenet = tf.keras.applications.ResNet50(
 )
 
 
-signature1, layer_data1 = create_model_data(model_vgg16)
-print(signature1)
-signature2, layer_data2 = create_model_data(model_vgg16_test)
-print(signature2)
-
-
-
-
-parent = push_model(model_resnet50,local=False)
-last = push_model(model_resnet50_imagenet,parent=parent,local=False)
-print(parent, last)
-parent = push_model(model_vgg16_imagenet,local=False)
-last = push_model(model_vgg16_test, parent=parent,local=False)
-print(parent, last)
-
-
-
-
-parent = push_model(model_resnet50,local=False)
-last = push_model(model_resnet50_imagenet,parent=parent,local=False)
-print(parent, last)
-parent = push_model(model_vgg16_imagenet,local=False)
-last = push_model(model_vgg16_test, parent=parent,local=False)
-print(parent, last)
+signature_vgg = mydb.push_model(model_vgg16_imagenet)
+mydb.push_to_cloud(signature_vgg)
+signature_resnet = mydb.push_model(model_resnet50_imagenet,local=False)
 
 
 
@@ -113,28 +82,14 @@ for name, model_type in enumerate(keras_model_list):
     model = keras_model_list[model_type]()
     print(push_model(model,model_source = model_type, organisation='Keras'))
 
-
-xception1 = get_model_data(get_model('bbd930cc56dfa39dc55e1318d9b5da2571d9eff0eeb96de7648faacb69c253cd')['model_data'])
-xception2 = get_model_data(get_model('bbd930cc56dfa39dc55e1318d9b5da2571d9eff0eeb96de7648faacb69c253cd')['model_data'])
-
-x = xception1['structure']
-y = xception2['structure']
-
-shared_items = {k: x[k] for k in x if k in y and x[k] == y[k]}
-print (len(shared_items))
-unshared_items = {k: x[k] for k in x if k in y and x[k] != y[k]}
-print (len(unshared_items))
-
-
-# %%
 # Make a small adjustment to test the SHA change
-last = push_model(model_vgg16_test, parent=last, username='brendanboner@gmail.com', local=False)
+model_vgg16_test = model_vgg16_imagenet
 
 for x in range(5):
     weights = model_vgg16_test.layers[1].get_weights()
     weights[0][0][0][0] = weights[0][0][0][0] * 1.004
     model_vgg16_test.layers[1].set_weights(weights)
-    last = push_model(model_vgg16_test, parent=last)
+    last = mydb.push_model(model_vgg16_test, useParent=True)
     print(last)
 
 

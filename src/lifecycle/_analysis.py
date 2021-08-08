@@ -9,9 +9,20 @@ log = logging.getLogger(__name__)
 
 # Get model and write to layer
 
-def get_history(self,search_sig, full_data=False):
+def get_history(self,search_sig, full_data=False, local=True):
 
     log.info("Getting Signature: {} ".format(search_sig))
+
+    if local:
+        log.info('writing to local repository')
+        db_data = self.local_data_collection
+        db_sig = self.local_signature_collection
+    else:
+        log.info('writing to remote repository')
+        db_data = self.remote_data_collection
+        db_sig = self.remote_signature_collection
+
+
     signature_data = self.get_signature(search_sig)
     if signature_data:
 
