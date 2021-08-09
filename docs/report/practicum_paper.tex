@@ -7,9 +7,24 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{listings}
+
+\graphicspath{{images/}}
+
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
+
+\lstset{
+    % general command to set parameter(s)
+    basicstyle=\small, % print whole listing small
+    keywordstyle=\color{black}\bfseries\underbar,
+    identifierstyle=,
+    commentstyle=\color{white},
+    stringstyle=\ttfamily,
+    showstringspaces=false,
+    language=Python}
 
 \title{
 Recording the Lifecycle of Software Models
