@@ -1,4 +1,5 @@
 \section{Method}
+
 The practicum was divided into three subareas, focusing on disection of the model and extrapolating the summary that would be used to robustly identify the internal structure of the model to enable the model synopsis to be stored in in a repository. The second section was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discoving the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
 
 The final method investigated in the practicum was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
@@ -39,7 +40,7 @@ Once we had every layer reduced to a number of identification values, we aggrega
     \end{tabular}
 \end{table}
 
-\subsection{Recording Changes}
+\subsection{Robustly Recording Changes}
 As we now have a method of identifying the model in a broken down format, the next stage is to record and apply a signature to the model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
 
 To ensure this is done correctly, we have two applications - local and global.
@@ -63,15 +64,20 @@ For global changes there will be a globa repository containing the signature and
 \end{tabular}
 \end{table}
 
-\subsection{Local Changes}
+\subsection{Local Changes vs Global Changes}
 
 An additional benefit of the summarisation is to be able to view the model as it is being trained. This is a local filestore or database that contains a more regular record of the the summary changes. It is recommended that global model reporistory is only used for publishing models that require tracability, and not for regular changes.
 
-In keeping with Git vocabulary, local changes are updated with the \verb|model_add(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository.
-
-The local repository stores the abstracted model information set that can be used for local comparisons.
+In keeping with Git vocabulary, local changes are updated with the \verb|model_add(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons.
 To commit the model to the public repository, the \verb|model_add(model, [parent])| command is used, with this time the original model that already exists in the repository. The command will return an error if the parent does not exist.
 
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=2.5in]{lifecycle.png}
+    \caption{Lifecycle of Models in Development Path}
+    \label{fig_sim}
+\end{figure}
 
 To provide reference storage for the model repositories, we created two mongodb instances with the same collection structure. There are two collections - the signatures and the model data. This was to enable verification of the evolution path and when necessary pull the model synopsis for comparison.
 
@@ -97,3 +103,21 @@ The impact of collisions depends on the application. When hash functions and fin
 
 
 \subsection{Packaging}
+
+the final area needed was determining how to distribute the mechanism for generatng and recording model representation artifacts. The solution was bundled together in a single package called \textit{lifecycle} that allows an existing solution to easily integrate the functions into the standard process. To demonstrate this, we bundled the lifecycle package into a single distributable wheel that was uploaded on a third party python notebook. As we were not able to guarantee that a local database was avaiable, we were able to setup a cloud instance of MongoDB on their Atlas platform that allowed us to run both local and central repositiories in the cloud. This was achieved by adding the following text to the start of the notebook/script:
+
+\begin{lstlisting}[frame=single,basicstyle=\ttfamily]
+from lifecycle import lifecycle_model
+from lifecycle import lifecycle_db
+
+mylifecycle = lifecycle_model()
+mydb = lifecycle_db (
+    username = '[db username]',
+    password = '[password]',
+    user='brendan.bonner2@mail.dcu.ie',
+    organisation='Dublin City University',
+    lifecycle=mylifecycle)
+
+mydb.init_model_db()
+\end{lstlisting}
+

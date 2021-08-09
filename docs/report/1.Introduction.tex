@@ -1,4 +1,34 @@
 \section{Introduction}
+Within the field of machine learning, there is an issue surrounding the lack of transparency of artificial intelligence solutions that are being deployed in commercial and public domains. This has led to initiatives such as the EU developing a white paper on Trustworthy AI \cite{high-level_expert_group_on_ai_ethics_2019}, which has provided an overview of the trust level needed in AI in \cite{ryan_ai_2020}. The most difficult to ascertain is the AI technology itself.
+
+Within the HLEG description, there are a number of references to the \textit{black box} of articial intelligence, where the complexity of a AI Neural Network system can no longer be analysed in a manner similar to statistical systems. Numerous attempts have been made to look inside the layers of the neural network to see what neurons are being activated \cite{kim_interpretability_2018}, and visualising where the attention is focused prior to making a prediction, but so far no provision has been made to establish trust in a system in a method closer to the human environment.
+
+When a person visits a doctor, barrister or any expert, they develop trust because they can access their life experience that will give them the competence to provide the service. We can look up their professional and academic qualifications, review their professional and associative history, and use our udnerstanding that these provide the provenance of trust. It is with this analogy that we will investigate if we can establish a similar provenance of trust for AI systems. The aim is straightforward, can we create a \textit{linkedin} for software models that we can use to evaluate the creation, initial seeding, and then layers of training needed to improve the trust of AI systems. If we can look at the CV of a software model, we should be able to show which base model the system was built on (i.e.  ) and common training (i.e. on \cite{deng_imagenet_2009})
+
+\subsection{Generating a Model Synopsis}
+To deliver the model synopsis, a reduction algorithm was applied to each layer in the model, reducing the weights and biases to a pair of unique identifiers containing the \textit{standard deviation} and the \textit{variance}, representing the distribution skew of the data away from a normal distribution. Once this synopsis is applied, we were able to reduce all default keras models from several megabytes to several kb arrays that are comparabile and the basis for generation of a unique signature.
+
+\subsection{Objectives}
+The overall objectives of the practicum are as follows:
+
+\begin{itemize}
+    \item Discover a method to extract a unique signature from any Deep Neural Network software model.
+    \item Create a local and global verification trail for
+    \begin{itemize}
+        \item A Path of provenance to all ancestor models
+        \item A method to evaluate divergence of the child model from the parent
+    \end{itemize}
+    \item Validation of Provenance via verification and illustration
+\end{itemize}
+
+Once the signature is generated, we are able to create a immutable link to a previous model, and store the deviation of both the structure and the weights as a factor. The key element of this is the generation of a lineage for both training and validating that there is a history of the model's evolution.
+
+\subsection{Introduction Simple}
+Within the field of machine learning, there is an issue surrounding the lack of transparency of artificial intelligence solutions that are being deployed in commercial and public domains. This has led to initiatives such as the EU developing a white paper on Trustworthy AI \cite{high-level_expert_group_on_ai_ethics_2019}, which has provided an overview of the trust level needed in AI in \cite{ryan_ai_2020}. The most difficult to ascertain is the AI technology itself.
+
+Within the HLEG description, there are a number of references to the \textit{black box} of articial intelligence, where the complexity of a AI Neural Network system can no longer be analysed in a manner similar to statistical systems. Numerous attempts have been made to look inside the layers of the neural network to see what neurons are being activated \cite{kim_interpretability_2018}, and visualising where the attention is focused prior to making a prediction, but so far no provision has been made to establish trust in a system in a method closer to the human environment.
+
+When a person visits a doctor, barrister or any expert, they develop trust because they can access their life experience that will give them the competence to provide the service. We can look up their professional and academic qualifications, review their professional and associative history, and use our udnerstanding that these provide the provenance of trust. It is with this analogy that we will investigate if we can establish a similar provenance of trust for AI systems. The aim is straightforward, can we create a \textit{linkedin} for software models that we can use to evaluate the creation, initial seeding, and then layers of training needed to improve the trust of AI systems. If we can look at the CV of a software model, we should be able to show which base model the system was built on (i.e.  \cite{noauthor_151203385_nodate}) and common training (i.e. on \cite{deng_imagenet_2009})
 
 The topic covers the recording of CNN layer metrics during the training
 sequence. The hypothesis is to examine trust mechanisms for explaining AI, and
@@ -46,28 +76,3 @@ the research should ask if providing verifiable additional data on how an
 artificial intelligence system evolves over time, if this can provide a
 foundation into further research towards comparisons of human trust and
 artificial intelligence trust.
-
-\subsection{Synopsis}
-To deliver the model synopsis, a reduction algorithm was applied to each layer in the model, reducing the weights and biases to a pair of unique identifiers containing the \textit{standard deviation} and the \textit{variance}, representing the distribution skew of the data away from a normal distribution. Once this synopsis is applied, we were able to reduce all default keras models from several megabytes to several kb arrays that are comparabile and the basis for generation of a unique signature.
-
-\subsection{Objectives}
-The overall objectives of the practicum are as follows:
-
-\begin{itemize}
-    \item Discover a method to extract a unique signature from any Deep Neural Network software model.
-    \item Create a local and global verification trail for
-    \begin{itemize}
-        \item A Path of provenance to all ancestor models
-        \item A method to evaluate divergence of the child model from the parent
-    \end{itemize}
-    \item Validation of Provenance via verification and illustration
-\end{itemize}
-
-Once the signature is generated, we are able to create a immutable link to a previous model, and store the deviation of both the structure and the weights as a factor. The key element of this is the generation of a lineage for both training and validating that there is a history of the model's evolution.
-
-\subsection{Introduction Simple}
-Within the field of machine learning, there is an issue surrounding the lack of transparency of artificial intelligence solutions that are being deployed in commercial and public domains. This has led to initiatives such as the EU developing a white paper on Trustworthy AI \cite{high-level_expert_group_on_ai_ethics_2019}, which has provided an overview of the trust level needed in AI in \cite{ryan_ai_2020}. The most difficult to ascertain is the AI technology itself.
-
-Within the HLEG description, there are a number of references to the \textit{black box} of articial intelligence, where the complexity of a AI Neural Network system can no longer be analysed in a manner similar to statistical systems. Numerous attempts have been made to look inside the layers of the neural network to see what neurons are being activated \cite{kim_interpretability_2018}, and visualising where the attention is focused prior to making a prediction, but so far no provision has been made to establish trust in a system in a method closer to the human environment.
-
-When a person visits a doctor, barrister or any expert, they develop trust because they can access their life experience that will give them the competence to provide the service. We can look up their professional and academic qualifications, review their professional and associative history, and use our udnerstanding that these provide the provenance of trust. It is with this analogy that we will investigate if we can establish a similar provenance of trust for AI systems. The aim is straightforward, can we create a \textit{linkedin} for software models that we can use to evaluate the creation, initial seeding, and then layers of training needed to improve the trust of AI systems. If we can look at the CV of a software model, we should be able to show which base model the system was built on (i.e.  \cite{noauthor_151203385_nodate}) and common training (i.e. on \cite{deng_imagenet_2009})
