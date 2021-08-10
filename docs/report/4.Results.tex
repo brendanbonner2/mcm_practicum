@@ -1,8 +1,8 @@
 \section{Results and Discussion}
 
-The practicum was able to identify the internal strcture of the models used for machine learning applications, and abstract the content to create a single 32 byte indicator, that can be used as an identifier for  uniquly identifying the provenance of machine learning models. The two key applications; recording the changes of the model during the training process locally, and publishing the signature to a cloud repository for verification, validation and traceability all resulted in a mechanism for recording the lifecycle of models.
+The practicum was able to identify the internal structure of the models used for machine learning applications, and abstract the content to create a single 32 byte indicator, that can be used as an identifier for uniquely identifying the provenance of machine learning models. The two key applications; recording the changes of the model during the training process locally, and publishing the signature to a cloud repository for verification, validation and traceability all resulted in a mechanism for recording the lifecycle of models.
 
-Beyond looking at simple models, we were able to generate signatures for all default keras models, as well as sample models used in competitive machine learning challenges. In all cases, we were able to generate a \textit{family tree} of the model's history, as well as an \textit{ancestor} function that identifies the original model used as the baseline for published models. Following the process presented in Figure \ref{fig:lifecycleModels}, we are able to store multiple relationships between models as they are created and published. More importantly, we are not able to remove the model from the global repository.
+Beyond looking at simple models, we were able to generate signatures for all default Keras models, as well as sample models used in competitive machine learning challenges. In all cases, we were able to generate a \textit{family tree} of the model's history, as well as an \textit{ancestor} function that identifies the original model used as the baseline for published models. Following the process presented in Figure \ref{fig:lifecycleModels}, we are able to store multiple relationships between models as they are created and published. More importantly, we are not able to remove the model from the global repository.
 
 \begin{figure}[!t]
     \centering
@@ -40,7 +40,7 @@ The first straightforward result, is being able to produce simplified impression
 
 \subsection{Identification of Model History}
 
-One of the most powerful elements for AI practitioners, is the ability to generate a timeline of releases based on when a model is released. In the example shown in figure \ref{fig:lifecycle_in real}, The initial model is shown preserved in both the local and remote repositories. At the end of the model training process, each individual iteration is stored internally with a parent<=>child relationship as part to training process. Once a model is ready for internal testing, it can be baselined, updating the model to point to the original basemodel. This is shown in the iterations in light blue below. When a model is ready for public release, then the model is baselined.
+One of the most powerful elements for AI practitioners, is the ability to generate a timeline of releases based on when a model is released. In the example shown in figure \ref{fig:lifecycle_in real}, The initial model is shown preserved in both the local and remote repositories. At the end of the model training process, each individual iteration is stored internally with a parent<=>child relationship as part to training process. Once a model is ready for internal testing, it can be baselined, updating the model to point to the original base model. This is shown in the iterations in light blue below. When a model is ready for public release, then the model is baselined.
 
 \begin{figure}[!t]
     \centering
@@ -56,7 +56,7 @@ The true power of this is being able to use the system to verify and baseline sy
     Family Tree of Models
 
 \subsection{Difference between published Models}
-    Obtaining an overview of paramenter changes of official models
+    Obtaining an overview of parameter changes of official models
 
 \subsection{Performance}
 
