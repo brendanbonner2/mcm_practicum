@@ -5,7 +5,16 @@ The practicum was divided into three subareas, focusing on disection of the mode
 The final method investigated in the practicum was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
 
 \subsection{Developing a Robust Model Synopsis}
-The first part of the delivery required that a model, in this case a CNN model in Keras, could be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. A model consists of:
+The first part of the delivery required that a model, in this case a CNN model in Keras, can be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. As shown in the architecture diagram\ref{fig:vgg16Architecture} showing for the popular VGG16 Network\cite{simonyan_deep_2014}, A network consists of multiple hidden layers representing the blackbox of artificial intelligence.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{VGG Architecture Overview.png}
+    \caption{VGG16 Network Architecture}
+    \label{fig:vgg16Architecture}
+\end{figure}
+
+The structure of the neural network, while complex, is nearly always of the same format across all recent improvements; not only for convolutional neural netwroks, but for any type of machine learning application using a modern framework. Even with recurrance and shrinking/expanding models, the formula is relatively consistent, as identified below:
 
 \begin{enumerate}
 \item An Input Shape. In the case of vision applications, this consists of an image with width, height and colour depth, which is usually three.
@@ -13,32 +22,99 @@ The first part of the delivery required that a model, in this case a CNN model i
 \item Output layers. One or a number of prediction or output layers. In transfer learning, the output layers can change based on the prediction expanding or contracting.
 \end{enumerate}
 
-To be able to break down the model, it is nevessary to examing the layers. Within each of the layers, there are is a series of sublayers that. In all cases, these are in the form of series of tuples that have a single or multi-dimensional series of weights, plus a set of biases. Theoretically, these values can contain any number, while on inspection, the majority are within the bounds of a number series that can be tuned up or down in very small increments. it is within these layers that we will extract the layer identification information. 
+To be able to break down the model, it is necessary to examine the layers for patterns that could be unique or representative. Within each of the layers, there are is a series of sublayers that in the majority of cases are a series of tuples that have a single or multi-dimensional weights, plus optional biases. Theoretically, these values can contain any number, while on inspection, the majority are bound number series that can be tuned up or down in very small increments. It is within these layers that we will extract the layer identification information. For visualisation, the filters do not show information by themselves, for instance the following figure \ref{fig:vggWeightVisualisation} shows the first layer of a VGG16 network, containing \textit{3x3x3x64} (or 1734) weights.
 
-For the benefit of breaking down a full layer across all dimensions, we examined a number of mathmatical options to identify the data underneath. It was important at this stage to focus on the minimal amount of information that would enable a unique signature to be generated. Experiments were completed to give an indication of distribution of data, which would assist in visualising the direction of training, in the form of layer-wide histograms or each dimension, and producing a \textit{histogram of gradients}-style overview. These were reduced in favour of two elements - Standard Deviation and Skew.
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{model_values.png}
+    \caption{VGG16 First Layer Weights Visualisation}
+    \label{fig:vggWeightVisualisation}
+\end{figure}
 
-Skew:
-\[ G_1=\frac{k_3}{k_2^{3/2}}=\frac{\sqrt{N(N-1)}}{N-2}\frac{m_3}{m_2^{3/2}}. \]
+This highlights the importance of not breaking down the layer to each individual layer dimension, as the complexity of the layer gets more comples as the numbers become larger. In the case of our abstraction, we will break down the layer for all values across all dimensions; one for weights, one for bias. To achieve this, we examined a number of mathmatical options to identify the data underneath. It was important at this stage to focus on the minimal amount of information that would enable a unique signature to be generated.
 
-Standard Deviation of N Numbers
-\[ \frac1N\sum_{i=1}^n\left(x^i-\overline x\right)^2 \]
+Experiments were completed to give an indication of distribution of data, which would assist in visualising the direction of training, in the form of layer-wide histograms or each dimension, and producing a \textit{histogram of gradients}-style overview. These were reduced in favour of two elements - Standard Deviation and Skew. In both cases experiements were concluded to establish if training a complete end to end network had an effect on the output values that would require a lower granularity of aggregations. The Standard Deviation formula used was shown below:
 
-Of all the averaging functions avaiable, the implementation of Standard Deviation in the python numpy library was able to reduce every single element to a single 64bit float. A second indication for skew was used to identify the drift of the standard deviation direction, and is included to ensure that movement of elements that retain the same Standard Deviation will not break the soltion.
+\begin{equation}
+    \label{eqn:stdev}
+    \frac1N\sum_{i=1}^n\left(x^i-\overline x\right)^2
+\end{equation}
+
+This formula provided a robust mixture that gave of deviation of the smallest change in a 64 bit float, the most commonly used weight and bias internal type used, while still retaining a characteristic was the standards deviation. It also highlighted that if a set of convolutional filter moved all looped in any direction, the standard deviation would remain identical. When filters are used for feature extraction, there is a small potential that a model could be retrained and retain the same standard deviation across all layers.
+
+To counter this we introduced a measure of \textit{skewness} to the layer to be recorded. The Pearson's coeeficient measure established the relationship between the mode and the standard deviation and gives an indication of the direction \textit{every} combined filter in a layer is veering. As before, unless the feature is two dimensional array, this is not an indication of how the filter performs against an visual input, but instead a protection of the movement of variables from one direction to another. The forumla used for the Skew of N samples is shown below. 
+
+\begin{equation}
+    \label{eqn:skew}
+    G_1=\frac{k_3}{k_2^{3/2}}=\frac{\sqrt{N(N-1)}}{N-2}\frac{m_3}{m_2^{3/2}}.
+\end{equation}
+
+
+Of all the averaging functions avaiable, the implementation of Standard Deviation in the python numpy library was able to reduce every single element to a single 64bit float. A second indication for skew was used to identify the drift of the standard deviation direction, or lack of symmetry,  and is included to ensure that movement of elements that retain the same Standard Deviation will not break the solution.
+
+Trial and Error showed that this was sufficient in training exercises to provide more information. An alternative approach was to develop a histogram of normalised values. The normalisation of the values again would reduce the level of change being recorded in circumstances where the correction of the weights during the learning process is distributed across early feature maps. Binning of distributions, either per dimension can potentially be investigate further, but for this project, the \textit{StdDev} and \textit{Skew} provide enough resolution to work.
+
+To show the difference between this approach, and that shown in other examples for visualisation in the background references, we take a number of early layer in commonly used machine learning models and compare the visualisation with the layer outcomes. For the initial models that were examined, we could tell that the filters behaved very differently between the first convolution of both ResNet50 and VGG16, as shown below:
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{vgg16_dcu_first_layer.png}
+    \caption{VGG16 First Layer Image Visualisation}
+    \label{fig:vgg16_dcu_image}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{resnet_dcu_first_layer.png}
+    \caption{ResNet50 First Layer Image Visualisation}
+    \label{fig:resnet50_dcu_image}
+\end{figure}
+
+Both first convolutions, loaded with different default imagenet weights give the impression that we can see a visual similarilty between feature layers. This is not the case, as even with few parameters, it is not viable to identify when a feature map changes from the weight values or the output image, which when distributed through the neural network, will have a significant effect on the final prediction.
+
+For both of the above images, we can compare the individual Standard Deviation and Skew across each filter, in this case \textit{VGG16 = 0.2067\%, ResNet50 = 0.1111\%} for the Standard Deviation of weights, and \textit{VGG16: -0.0145,ResNet50: -0.1124}. When shown in figure ~\ref{fig:firstlayermodelcomparison}, there is a significant difference in both first layers.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{std and skew of first layers.png}
+    \caption{Comparison of StdDev and Skew of VGG16, ResNet50}
+    \label{fig:firstlayermodelcomparison}
+\end{figure}
+
+Once we established that the layers could be represented in this manner, a structure containing both elements for each layer was created. The data structure, including layers with no weights or biases like pooling, padding or normalisation is then used as the one component of generating a signature.
 
 \subsection{Generating a Unique signature}
-Once we had every layer reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. 
+Once we had every layer reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. During this investigation, it was recorded that the process for extracting an \textit{impression} of the neural network model needs to be one way. If we are focusing on the trust of the system that the model is dependent on, it is necessary to ensure that the model cannot be recreated without the complete data source and process needed to accurately regenerate the model.
 
-\begin{table}[h]
-    \caption{Values generated from evaluated model}
+The outcome of this project will be establishing if the model is either identical, or the weights and bias are similar. In almost every case, this \textit{\textbf{will not}} be reproducable, instead creating a brand new instance that that path of provenance will be based on. That process is shown in \ref{fig_sig_generator}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{flowchart-3.png}
+    \caption{Process for developing Unique Signature}
+    \label{fig_sig_generator}
+\end{figure}
+
+The flow of generating a new signature is highly dependant on the main hashing alogrithm used prior to returning a unique signature. 
+
+\begin{table}[!ht]
+    \centering
+    \caption{Data Values stored per Layer}
     \setlength\tabcolsep{0pt} % make LaTeX figure out intercolumn spacing
-    \begin{tabular}{@{} |p{2cm}|p{6.5cm}| @{}}
-        Mean    & The average value of all layers across all dimension \\ \hline 
-        StdDev  & An indication of the deviation of values, to assist in seeing how the values are weighted \\ \hline
-        Histogram & A Histogram of the distribution of values across the layer. This will assist in giving a more informed distribution. As there are a large number of potential entries in the dense layers, from binary to minute changes in float values, the Histogram will be split between the values smallest non-zero granularity and the largest value across 10 bins. \\ \hline
-        Name.   & Name of Layer \\ \hline
-        Angle of Data & This is a single value representing the weighting of a Hash of the Layer Values (weights and biases) \\ 
+    \begin{tabular}{@{} p{2cm} p{6.5cm}  @{}}
+        \hline
+        Metric & Description \\
+        \hline
+        Weight StdDev  & An indication of the deviation of values, to assist in seeing how the values are weighted \\
+        Weight Mean    & The average value of all layers across all dimension \\
+        Bias StdDev  & An indication of the deviation of values, to assist in seeing how the values are weighted \\
+        Bias Mean    & The average value of all layers across all dimension \\
+        Skew   & The skew of the dataset across the entire layer \\
+        \hline
     \end{tabular}
 \end{table}
+
+The name of the layer was removed as an indicator as the name potentially changes on each pull from the Keras repository. Another aspect to bear in mind that models created without pre-loaded weights will always have a diverse weighting due to the nature of the various initialisers (\textit{Glorut, Uniform etc.})
 
 \subsection{Robustly Recording Changes}
 As we now have a method of identifying the model in a broken down format, the next stage is to record and apply a signature to the model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
@@ -47,21 +123,21 @@ To ensure this is done correctly, we have two applications - local and global.
 \subsection{Global Changes}
 For global changes there will be a globa repository containing the signature and summary of published models. 
 
-\begin{table}[h]
-\caption{Model Reference Storage}
-
-\begin{tabular}{| p{0.25\linewidth} | p{0.7\linewidth} |}
-    \hline
-    Model Identifier    & This is the checksum generated by the model \\
-    \hline
-    Creation Date       & This will be the timestamp that the model was first added to the repository \\
-    \hline
-    Parent              & The model identification of the direct parent of the model. \\
-    \hline
-    Model Summary       & A binary object that contains the items generated in the table above. \\
-    \hline 
-    
-\end{tabular}
+\begin{table}[!ht]
+    \centering
+    \caption{Structural Data Stored per Layer}
+    \setlength\tabcolsep{0pt} % make LaTeX figure out intercolumn spacing
+    \begin{tabular}{@{} p{2cm} p{6.5cm}  @{}}
+            \hline
+            Name & Desc \\
+            \hline
+            "class" & Class Type of the Layer. There are a number of potential outcomes for the layer type. We do not use the layer type for assessment of the data, purely to identify if the structure has changed. \\
+            "input\_shape" & The Shape of the input Array, expressed as a set, i.e. \textit{(None, 224, 224, 3)} for an image input. \\
+            "output\_shape" &  The shape of the output layer of the model. This contains either a probability output contain the number of possible outcomes, but can also contain full image data in segmentation and GAN applications. \\
+            "trainable" &  A value which indicates if the layer is trainable. Including this boolean change will indicate if transfer learning is being used. \\
+            "params" &  The number of parameters in the layer in terms of weights and biases \\
+            \hline
+    \end{tabular}
 \end{table}
 
 \subsection{Local Changes vs Global Changes}
@@ -71,20 +147,12 @@ An additional benefit of the summarisation is to be able to view the model as it
 In keeping with Git vocabulary, local changes are updated with the \verb|model_add(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons.
 To commit the model to the public repository, the \verb|model_add(model, [parent])| command is used, with this time the original model that already exists in the repository. The command will return an error if the parent does not exist.
 
-
-\begin{figure}[!t]
-    \centering
-    \includegraphics[width=2.5in]{lifecycle.png}
-    \caption{Lifecycle of Models in Development Path}
-    \label{fig_sim}
-\end{figure}
-
 To provide reference storage for the model repositories, we created two mongodb instances with the same collection structure. There are two collections - the signatures and the model data. This was to enable verification of the evolution path and when necessary pull the model synopsis for comparison.
 
-\texttt{
-    db.model.createIndex( {signature:1},{unique:true} )
-    db.model.insertOne( { signature:'0x123412341234', creator:'brendanboner@gmail.com', previous:null, date:'01-01-2020 16:25' } )
-}
+\begin{lstlisting}
+db.model.createIndex( {signature:1},{unique:true} )
+db.model.insertOne( { signature:'0x123412341234', creator:'brendanboner@gmail.com', previous:null, date:'01-01-2020 16:25' } )
+\end{lstlisting}
 
 \subsection{Comparing Models}
 To ensure there is tracibility in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textit{StdDev} \& \textit{Angle of Array}
@@ -104,9 +172,11 @@ The impact of collisions depends on the application. When hash functions and fin
 
 \subsection{Packaging}
 
-the final area needed was determining how to distribute the mechanism for generatng and recording model representation artifacts. The solution was bundled together in a single package called \textit{lifecycle} that allows an existing solution to easily integrate the functions into the standard process. To demonstrate this, we bundled the lifecycle package into a single distributable wheel that was uploaded on a third party python notebook. As we were not able to guarantee that a local database was avaiable, we were able to setup a cloud instance of MongoDB on their Atlas platform that allowed us to run both local and central repositiories in the cloud. This was achieved by adding the following text to the start of the notebook/script:
+The final area needed was determining how to distribute the mechanism for generatng and recording model representation artifacts. The solution was bundled together in a single package called \textit{lifecycle} that allows an existing solution to easily integrate the functions into the standard process. To demonstrate this, we bundled the lifecycle package into a single distributable wheel that was uploaded on a third party python notebook.
 
-\begin{lstlisting}[frame=single,basicstyle=\ttfamily]
+As we were not able to guarantee that a local database was avaiable, we were able to setup a cloud instance of MongoDB on their Atlas platform that allowed us to run both local and central repositiories in the cloud. This was achieved by adding the following text to the start of the notebook/script:
+
+\begin{lstlisting}
 from lifecycle import lifecycle_model
 from lifecycle import lifecycle_db
 
@@ -121,3 +191,24 @@ mydb = lifecycle_db (
 mydb.init_model_db()
 \end{lstlisting}
 
+As an example, we were able to apply the package directly to the current leader in the Kaggle Dogs vs Cats challenge\cite{golle_machine_2008}. We were able to add the code example above to the python notebook, add the lifecycle.callback to the fit function. From there we successfully recorded the model prior to training (which was recognised as a ResNet50 network from the global repository), and the training was recorded in the local repository, with two models being recorded as children of the core ResNet50 network on the global repository.
+
+\begin{lstlisting}
+from lifecycle.callback import LifecycleCallback
+
+callbacks = [
+    LifecycleCallback( mydb)
+]
+\end{lstlisting}
+
+The result of the initial local stored training, when reduced to 5 epoch, is shown below, with significant training indicated on the model from the base model.
+
+
+\begin{lstlisting}
+23:24:31 (user:BB)  Weight Change 0.3657% Skew Change -0.206
+23:24:28 (user:BB), Weight Change 0.3496% Skew Change -0.161
+23:24:25 (user:BB), Weight Change 0.3342% Skew Change -0.131
+23:24:21 (user:BB), Weight Change 0.3194% Skew Change -0.109
+23:24:16 (user:BB), Weight Change 0.5589% Skew Change -0.259
+23:04:38 (user:Keras), Weight Change 0.0000% Skew Change 0.000
+\end{lstlisting}
