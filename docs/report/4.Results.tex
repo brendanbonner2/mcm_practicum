@@ -51,7 +51,7 @@ One of the most powerful elements for AI practitioners, is the ability to genera
 
 The true power of this is being able to use the system to verify and baseline systems, so they are compliant and can be audited in line emerging standard in AI, such as the EU Artificial Intelligence Act, inspired by the work of the AI HLEG \cite{high-levelexpertgrouponaiEthicsGuidelinesTrustworthy2019}. Every subsequent model released will be added to the chain, and at anytime the model itself can be used to generate a signature while shows the history.
 
-The final set of tools included in the Practicum provide the overview of the history. The \verb|lifecycle.get_history()| function returns the history in either the developers or the global repository of a given signature, providing the dates, basic information about the model as well as the important signature. The output of signatures is quite extensive when recording the history of training, although it has been successful in staying within the family branch. Additional functionality is provided by the \verb|lifecycle.get_ancestor()|, which shows the local root node, or the ultimate parent in the global repository. Of course, this can be applied in two directions, and the \verb|lifecycle.family_tree()| function records all children available in a nested group.
+The final set of tools included in the Practicum provide the overview of the history. The \verb|lifecycle.get_history()| function returns the history in either the developers or the global repository of a given signature, providing the dates, basic information about the model as well as the important signature. The information for a default keras transformer training over 20 epoch is shown in figure \ref{fig:transformer}
 
 \begin{figure}[!ht]
     \centering
@@ -60,9 +60,12 @@ The final set of tools included in the Practicum provide the overview of the his
     \label{fig:transformer}
 \end{figure}
 
-The true power of this function will be a full graphical GUI to explore the graph, and functions are avail to plot both the history (figure \ref{fig:transformer}) as well as an interactive tool for comparing the entire tree. The performance of both is significantly faster than any other tools for comparing the layer structure of models in real time.
+The output of signatures is quite extensive when recording the history of training, although it has been successful in staying within the family branch. Additional functionality is provided by the \verb|lifecycle.get_ancestor()|, which shows the local root node, or the ultimate parent in the global repository. Of course, this can be applied in two directions, and the \verb|lifecycle.family_tree()| function records all children available in a nested group.
 
-\begin{figure}[!t]
+
+The true power of this function will be a full graphical GUI to explore the graph, and functions are avail to plot both the history (figure \ref{fig:beforeafter}) as well as an interactive tool for comparing the entire tree. The performance of both is significantly faster than any other tools for comparing the layer structure of models in real time.
+
+\begin{figure}[!h]
     \centering
     \includegraphics[width=2.5in]{model_changes.png}
     \caption{Comparison of Before/After Training}
