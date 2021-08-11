@@ -1,11 +1,11 @@
 \section{Method}
 
-The \textit{Practicum} was divided into three sub areas, focusing on dissection of the model and extrapolating the summary that would be used to robustly identify the internal structure of the model to enable the model synopsis to be stored in in a repository. The second section was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discovering the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
+The \textit{Practicum} is divided into three sub areas. The first covers the dissection of the model, extrapolating the summary that would be used to robustly identify the internal structure of the model. The second component was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discovering the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
 
 The final method investigated in the \textit{Practicum} was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
 
 \subsection{Developing a Robust Model Synopsis}
-The first part of the delivery required that a model, in this case a CNN model in Keras, can be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. As shown in the architecture diagram\ref{fig:vgg16Architecture} showing for the popular VGG16 Network\cite{simonyanDeepConvolutionalNetworks2014}, A network consists of multiple hidden layers representing the black-box of artificial intelligence.
+The first part of the delivery required that a model, in this case a CNN model in Keras, can be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. As shown in the architecture diagram (figure \ref{fig:vgg16Architecture}) showing the popular VGG16 Network\cite{simonyanDeepConvolutionalNetworks2014}, all networks consists of multiple hidden layers representing the black-box of artificial intelligence.
 
 \begin{figure}[!ht]
     \centering
@@ -33,7 +33,7 @@ To be able to break down the model, it is necessary to examine the layers for pa
 
 This highlights the importance of not breaking down the layer to each individual layer dimension, as the complexity of the layer gets more complex as the numbers become larger. In the case of our abstraction, we will break down the layer for all values across all dimensions; one for weights, one for bias. To achieve this, we examined a number of mathematical options to identify the data underneath. It was important at this stage to focus on the minimal amount of information that would enable a unique signature to be generated.
 
-Experiments were completed to give an indication of distribution of data, which would assist in visualising the direction of training, in the form of layer-wide histograms or each dimension, and producing a \textit{histogram of gradients}-style overview. These were reduced in favour of two elements - Standard Deviation and Skew. In both cases experiments were concluded to establish if training a complete end to end network had an effect on the output values that would require a lower granularity of aggregations. The Standard Deviation formula used was shown below:
+Experiments were completed to give an indication of distribution of data, which would assist in visualising the direction of training, in the form of layer-wide histograms or each dimension, and producing a \textit{histogram of gradients}-style overview. These were reduced in favour of two elements - Standard Deviation and Skew. The Standard Deviation formula used was shown below. In both cases experiments were concluded to establish if training a complete end to end network had an effect on the output values that would require a lower granularity of aggregations. 
 
 \begin{equation}
     \label{eqn:stdev}
@@ -42,7 +42,7 @@ Experiments were completed to give an indication of distribution of data, which 
 
 This formula provided a robust mixture that gave of deviation of the smallest change in a 64 bit float, the most commonly used weight and bias internal type used, while still retaining a characteristic was the standards deviation. It also highlighted that if a set of convolutional filter moved all looped in any direction, the standard deviation would remain identical. When filters are used for feature extraction, there is a small potential that a model could be retrained and retain the same standard deviation across all layers.
 
-To counter this we introduced a measure of \textit{skewness} to the layer to be recorded. The Pearson's coefficient measure established the relationship between the mode and the standard deviation and gives an indication of the direction \textit{every} combined filter in a layer is veering. As before, unless the feature is two dimensional array, this is not an indication of how the filter performs against an visual input, but instead a protection of the movement of variables from one direction to another. The formula used for the Skew of N samples is shown below. 
+To counter this we introduced a measure of \textit{skewness} (formula below) to the layer to be recorded. The Pearson's coefficient measure established the relationship between the mode and the standard deviation and gives an indication of the direction \textit{every} combined filter in a layer is veering. As before, unless the feature is two dimensional array, this is not an indication of how the filter performs against an visual input, but instead a protection of the movement of variables from one direction to another.  
 
 \begin{equation}
     \label{eqn:skew}
@@ -54,7 +54,7 @@ Of all the averaging functions available, the implementation of Standard Deviati
 
 Trial and Error showed that this was sufficient in training exercises to provide more information. An alternative approach was to develop a histogram of normalised values. The normalisation of the values again would reduce the level of change being recorded in circumstances where the correction of the weights during the learning process is distributed across early feature maps. Binning of distributions, either per dimension can potentially be investigate further, but for this project, the \textit{StdDev} and \textit{Skew} provide enough resolution to work.
 
-To show the difference between this approach, and that shown in other examples for visualisation in the background references, we take a number of early layer in commonly used machine learning models and compare the visualisation with the layer outcomes. For the initial models that were examined, we could tell that the filters behaved very differently between the first convolution of both ResNet50 and VGG16, as shown below:
+To show the difference between this approach, and that shown in other examples for visualisation in the background references, we take a number of early layer in commonly used machine learning models and compare the visualisation with the layer outcomes. For the initial models that were examined, we could tell that the filters behaved very differently between the first convolution of both ResNet50 and VGG16, as shown in figures \ref{fig:vgg16_dcu_image} and \ref{fig:resnet50_dcu_image}.
 
 \begin{figure}[!ht]
     \centering
@@ -84,9 +84,9 @@ For both of the above images, we can compare the individual Standard Deviation a
 Once we established that the layers could be represented in this manner, a structure containing both elements for each layer was created. The data structure, including layers with no weights or biases like pooling, padding or normalisation is then used as the one component of generating a signature.
 
 \subsection{Generating a Unique signature}
-Once we had every layer reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. During this investigation, it was recorded that the process for extracting an \textit{impression} of the neural network model needs to be one way. If we are focusing on the trust of the system that the model is dependent on, it is necessary to ensure that the model cannot be recreated without the complete data source and process needed to accurately regenerate the model.
+Once we had all layers reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. During this investigation, it was recorded that the process\ref{fig_sig_generator} for extracting an \textit{impression} of the neural network model needs to be one way. If we are focusing on the trust of the system that the model is dependent on, it is necessary to ensure that the model cannot be recreated without the complete data source and process needed to accurately regenerate the model.
 
-The outcome of this project will be establishing if the model is either identical, or the weights and bias are similar. In almost every case, this \textit{\textbf{will not}} be reproducible, instead creating a brand new instance that that path of provenance will be based on. That process is shown below in figure \ref{fig_sig_generator}
+The outcome of this project will be establishing if the model is either identical, or the weights and bias are similar. In almost every case, this \textit{\textbf{will not}} be reproducible, instead creating a brand new instance that that path of provenance will be based on.s
 
 \begin{figure}[!ht]
     \centering
@@ -114,10 +114,10 @@ The flow of generating a new signature is highly dependant on the main hashing a
     \end{tabular}
 \end{table}
 
-The name of the layer was removed as an indicator as the name potentially changes on each pull from the Keras repository. Another aspect to bear in mind that models created without pre-loaded weights will always have a diverse weighting due to the nature of the various initialisers (\textit{Glorut, Uniform etc.})
+The name of the layer was removed as an indicator as the name potentially changes on each pull from the Keras repository. Another aspect to bear in mind that models created without pre-loaded weights will always have a diverse weighting due to the nature of the various initialisers (\textit{Glorut, Uniform etc.}). Initial examination of models created showed a different signature on each restarted system, but a similar signature when a model is created repeatedly. This indicates that the default initialisers remain during repeated creation of models, and using this method would either need to indicate the randomly initialised model is \textit{parentless}, or create a blank slate parent with zero initialiser to compare all similar models.
 
 \subsection{Robustly Recording Changes}
-As we now have a method of identifying the model in a broken down format, the next stage is to record and apply a signature to the model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
+As we now have a method of identifying the model in a broken down format, the next stage is to link the structure to the data model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
 
 \begin{table}[!ht]
     \centering
@@ -145,12 +145,18 @@ An additional benefit of the summarisation is to be able to view the model as it
 In keeping with Git vocabulary, local changes are updated with the \verb|push_model(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons.
 To commit the model to the public repository, either the the \verb|push_model(model, [baseline])| command is used with the \verb|local=False| parameter, or if the model has already be updated elsewhere and the model itself is not available, the \verb|push_to_cloud(signature)| function will commit this with the previously set baseline used as the parent. When applied to the global repository, this will return an error if the parent does not exist, unless permission is granted to create a new ancestor.
 
-To provide reference storage for the model repositories, we created two MongoDB instances with the same collection structure. There are two collections - the signatures and the model data. This was to enable verification of the evolution path and when necessary pull the model synopsis for comparison.
+Each of the functions are provided as part of a package, encapsulating the data method used. To provide reference storage for the model repositories, we designed multiple MongoDB instances with the same collection structure containing two collections - the signatures and the model data. This enables verification of the evolution path and when necessary pull the model synopsis for comparison.
 
 The signature dataset contains the unique signature, as well as the internal id providing a timestamp. 
 
 \begin{lstlisting}
-{"_id":{"$oid":"611063067dbea4ce80c747a0"},"signature":"ede69fca86a03c780a98dcec6fc1cfe406a3448dcba95663baa18bf853bc2f0f","parent":null,"username":"brendan.bonner2@mail.dcu.ie","organisation":"Dublin City University","model_source":"Keras Original ResNet50","model_data":{"$oid":"611063067dbea4ce80c7479f"}}
+{"_id":{"$oid":"611063067dbea4ce80c747a0"},
+    "signature":"ede69..32 bytes..f0f",
+    "parent":null,"username":"brendan.bonner2@mail.dcu.ie",
+    "organisation":"Dublin City University",
+    "model_source":"Keras Original ResNet50",
+    "model_data":{"$oid":"611063067dbea4ce80c7479f"}
+}
 \end{lstlisting}
 
 The final parament points to the model collection, where a signature is required to find the model. Once a signature is available, it is possible to recover the impression of the complete tree, including the structure and data.
@@ -197,8 +203,7 @@ callbacks = [
 ]
 \end{lstlisting}
 
-The result of the initial local stored training, when reduced to 5 epoch, is shown below, with significant training indicated on the model from the base model.
-During the course of the sampling, we examined every publicly available sample that included training data from the Keras GitHub library, and we able to show that the lifecycle functions can be applied to CNNs, as well and RNN, Transformers Segmentation classification applications without modifications. 
+The result of the initial local stored training, when reduced to 5 epoch, is shown below, with significant training indicated on the model from the base model.In the development of model data sets, we examined every publicly available sample that included training data from the Keras GitHub library, and we were able to show that the lifecycle functions can be applied to CNNs, as well and RNN, Transformers Segmentation classification applications without modifications. Every publicly available preloaded model was also profiled, with results shown in the conclusions.
 
 \begin{lstlisting}
 23:24:31 (user:BB)  Weight 0.3657% Skew -0.206

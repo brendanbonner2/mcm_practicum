@@ -40,7 +40,7 @@ The first straightforward result, is being able to produce simplified impression
 
 \subsection{Identification of Model History}
 
-One of the most powerful elements for AI practitioners, is the ability to generate a timeline of releases based on when a model is released. In the example shown in figure \ref{fig:lifecycle_in real}, The initial model is shown preserved in both the local and remote repositories. At the end of the model training process, each individual iteration is stored internally with a parent<=>child relationship as part to training process. Once a model is ready for internal testing, it can be baselined, updating the model to point to the original base model. This is shown in the iterations in light blue below. When a model is ready for public release, then the model is baselined.
+One of the most powerful elements for AI practitioners, is the ability to generate a timeline of releases based on when a model is released. In the example shown in figure \ref{fig:lifecycle_in real}, The initial model is shown preserved in both the local and remote repositories. At the end of the model training process, each individual iteration is stored internally with a parent<=>child relationship as part to training process. Once a model is ready for internal testing, it can be baselined, updating the model to point to the original base model. This is shown in the iterations in light blue below. When a model is ready for public release, then the model is baselined. We were able to provide multiple directions to deliver this be creating a parallel library that uses only the data functions. From here, we are able to produce the output below in text format that is then transfered into a visualisation tool. Demonstrations are available showing the development of this output in real time as more release are made to the family tree.
 
 \begin{figure}[!ht]
     \centering
@@ -63,7 +63,7 @@ The final set of tools included in the Practicum provide the overview of the his
 The output of signatures is quite extensive when recording the history of training, although it has been successful in staying within the family branch. Additional functionality is provided by the \verb|lifecycle.get_ancestor()|, which shows the local root node, or the ultimate parent in the global repository. Of course, this can be applied in two directions, and the \verb|lifecycle.family_tree()| function records all children available in a nested group.
 
 
-The true power of this function will be a full graphical GUI to explore the graph, and functions are avail to plot both the history (figure \ref{fig:beforeafter}) as well as an interactive tool for comparing the entire tree. The performance of both is significantly faster than any other tools for comparing the layer structure of models in real time.
+The true power of this function will be a full graphical GUI to explore the graph, and functions are avail to plot both the history (figure \ref{fig:beforeafter}) as well as an interactive tool for comparing the entire tree. The performance of both is significantly faster than any other tools for comparing the layer structure of models in real time. All objectives of being able to see the history of models, plus insight into an average layer delta have been successful.
 
 \begin{figure}[!h]
     \centering
