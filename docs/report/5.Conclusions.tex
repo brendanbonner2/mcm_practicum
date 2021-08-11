@@ -1,39 +1,34 @@
 \section{Conclusions and Recommendations}
 
-The conclusion of the practicum is there is currently no simple and efficient method of verifying the lifecycle of the development of the model. When models are released, either for production, competitions or uploaded to critical systems, they remain a blackbox. While developing a system for verifying the history of the model, it will allow us to both gain an insight into the development process, but also be able to check shared characteristics between machine learning deep learning systems.
+The conclusion of the \textit{Practicum} is there is currently no simple and efficient method of verifying the lifecycle of the development of the model. When models are released, either for production, competitions or uploaded to critical systems, they remain a blackbox. While developing a system for verifying the history of the model, it will allow us to both gain an insight into the development process, but also be able to check shared characteristics between machine learning deep learning systems.
 
-\begin{enumerate}
-    \item 
-    Increasing information stored
-    Creating the informaiton blocks at a more granular level. We want to be able to generate the checksum with all the information currently stored, but we would create a non-optimal storage if we included the full set of model weights. There may be a compromise to provide more visibility, while retaining unique characteristics of the model.
-    
-    \item 
-    Introduction of blockchain verification
-    Currently using database solutions that can be accessed publicly, and member linewidth
-    
-    \item 
-    Closer integration with Machine Learning providers
-    Including push functionality into the training and deployment process could be transparent
-    
-    \item 
-    Streaming of Information
-    Streaming, via a node.js server, directly to a web page based on a local "training id" would assist in verifying what is currently being trained.
-\end{enumerate}
+We explored a number of novel elements to provide more information about a model that can be used to identify differences between models, and the difference between layers of models. The next phase of the research will be to develop a study based on real world use in a development environment. The practical application yielded more data than originally envisaged, particularly in relation to the transferability of the modules to all deep neural networks.
 
+Visualisation applications were limited to graphs showcasing the difference between models. It was not necessary to explore 3D comparison primarily because the layer information was reduced to two variables. While they have the capacity to continuously update an visual family tree while the system is in training, a direct \textit{tensorboard} style application may be more beneficial .
 
 \subsection{Recommendations}
 
 
-This section is usually left until the rest of the paper has been written. Conclusions are drawn in the context of the objectives of the project. They should be supported by data and results, and, if possible, compared with theory and data obtained by others in the literature (i.e. related published work). It is a chance to summarise what you have learnt from the project. Remember that human attention spans are extremely short, and the reader will appreciate a good summary, even if you feel that your conclusion is self-evident.
+Our experimentation into the personality of a neural network model shows that there is additional scope for further research using these finding within the scope of interpretability and explainability. Comparisons between training models error rates and the difference in layers provide an indication into how training is successful, although there was an interesting observation where some layers were trained \textit{more}, that is the similarity between layers changed out of sync with error rates.
 
-Recommendations are also extremely important, as they provide an opportunity to demonstrate the experience you have gained. The ability to self-assess one's work with a view to suggesting ways things could have been carried out differently is a valuable asset.
+There are several promising spillover activities that can follow this approach. The majority are related to explainability, although a more pertinent issue will be utilisation of the techniques in this paper to a practical application for real world auditing of models as they are being trained and released. In addition, the following areas could increase knowledge of uptake of explainable AI.
 
-Recommendations can also include suggestions to how the work could be expanded or extended. This is often placed in a separate section entitled "Future Work".
-The IEEEtran class file is used to format your paper and style the text. All margins, 
-column widths, line spaces, and text fonts are prescribed; please do not 
-alter them. You may note peculiarities. For example, the head margin
-measures proportionately more than is customary. This measurement 
-and others are deliberate, using specifications that anticipate your paper 
-as one part of the entire proceedings, and not as an independent document. 
-Please do not revise any of the current designations.
+\begin{enumerate}
+    \item 
+    Increasing information stored. 
+    Creating the information blocks at a more granular level to generate the checksum with all the information currently stored can provide more utility. One the other hand, this would create a non-optimal storage if we included the full set of model weights. There may be a compromise to provide more visibility, while retaining unique characteristics of the model.
+    
+    \item 
+    Introduction of blockchain verification.
+    Currently using database solutions that can be accessed publicly. Integrating a distributed ledger to store the public models may provide more security in the models. Until, it is required, the one-way hashing algorithm provide security that the model used is identical, or closely related, to a signature.
+    
+    \item 
+    Closer integration with Machine Learning providers.
+    Including push functionality into the training and deployment process, as well as the inclusion of visualisation tools, could increase uptake and provide more sources to compare.
+    
+    \item 
+    Testing in a model distribution environment.
+    The solution can be used in an environment where pre-trained of default models can be verified prior to manipulation. This can be used to establish a metric of similarity between models (the functions have been included) once trained.
+\end{enumerate}
+
 

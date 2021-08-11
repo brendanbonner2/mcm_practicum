@@ -39,15 +39,6 @@ mydb.init_model_db()
 
 model_vgg16 = tf.keras.applications.VGG16(
     include_top=True,
-    weights=None,
-    input_tensor=None,
-    input_shape=None,
-    pooling=None,
-    classes=1000
-)
-
-model_vgg16_imagenet = tf.keras.applications.VGG16(
-    include_top=True,
     weights="imagenet",
     input_tensor=None,
     input_shape=None,
@@ -55,7 +46,7 @@ model_vgg16_imagenet = tf.keras.applications.VGG16(
     classes=1000
 )
 
-model_resnet50_imagenet = tf.keras.applications.ResNet50(
+model_resnet50 = tf.keras.applications.ResNet50(
     include_top=True,
     weights='imagenet',
     input_tensor=None,

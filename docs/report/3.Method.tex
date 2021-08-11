@@ -1,11 +1,11 @@
 \section{Method}
 
-The practicum was divided into three sub areas, focusing on dissection of the model and extrapolating the summary that would be used to robustly identify the internal structure of the model to enable the model synopsis to be stored in in a repository. The second section was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discovering the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
+The \textit{Practicum} was divided into three sub areas, focusing on dissection of the model and extrapolating the summary that would be used to robustly identify the internal structure of the model to enable the model synopsis to be stored in in a repository. The second section was to generate a unique signature for the model that is verified with minor and major changes to both the weights and biases, but also to quickly identify the model structure. The third part was discovering the best method to store they model summaries, so that they can be reused, pulled back and compared with the model currently in development, training or deployment.
 
-The final method investigated in the practicum was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
+The final method investigated in the \textit{Practicum} was application. On top of the original aim of determining the evolutionary tree of the model, other applications such as identifying difference between models that are in the process of being trained, as well as identifying portions of the training or deployment that would assist other methods of observability for model development, trust determination and internal visualisation.
 
 \subsection{Developing a Robust Model Synopsis}
-The first part of the delivery required that a model, in this case a CNN model in Keras, can be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. As shown in the architecture diagram\ref{fig:vgg16Architecture} showing for the popular VGG16 Network\cite{simonyan_deep_2014}, A network consists of multiple hidden layers representing the black-box of artificial intelligence.
+The first part of the delivery required that a model, in this case a CNN model in Keras, can be reduced to an information block that each layer contains a summary of the layer that can record any changes in the weights and biases. The structure of a model consists of a number of standard information points that are consistent across all deep learning processes. While we initially focused on CNNs, it became clear that any model could be used. As shown in the architecture diagram\ref{fig:vgg16Architecture} showing for the popular VGG16 Network\cite{simonyanDeepConvolutionalNetworks2014}, A network consists of multiple hidden layers representing the black-box of artificial intelligence.
 
 \begin{figure}[!ht]
     \centering
@@ -22,7 +22,7 @@ The structure of the neural network, while complex, is nearly always of the same
 \item Output layers. One or a number of prediction or output layers. In transfer learning, the output layers can change based on the prediction expanding or contracting.
 \end{enumerate}
 
-To be able to break down the model, it is necessary to examine the layers for patterns that could be unique or representative. Within each of the layers, there are is a series of sublayers that in the majority of cases are a series of tuples that have a single or multi-dimensional weights, plus optional biases. Theoretically, these values can contain any number, while on inspection, the majority are bound number series that can be tuned up or down in very small increments. It is within these layers that we will extract the layer identification information. For visualisation, the filters do not show information by themselves. For instance the following figure \ref{fig:vggWeightVisualisation}, shows the first layer of a VGG16 network\cite{brownlee_how_2019}, containing \textit{3x3x3x64} (or 1734) weights.
+To be able to break down the model, it is necessary to examine the layers for patterns that could be unique or representative. Within each of the layers, there are is a series of sublayers that in the majority of cases are a series of tuples that have a single or multi-dimensional weights, plus optional biases. Theoretically, these values can contain any number, while on inspection, the majority are bound number series that can be tuned up or down in very small increments. It is within these layers that we will extract the layer identification information. For visualisation, the filters do not show information by themselves. For instance the following figure \ref{fig:vggWeightVisualisation}, shows the first layer of a VGG16 network\cite{brownleeHowVisualizeFilters2019}, containing \textit{3x3x3x64} (or 1734) weights.
 
 \begin{figure}[!ht]
     \centering
@@ -86,7 +86,7 @@ Once we established that the layers could be represented in this manner, a struc
 \subsection{Generating a Unique signature}
 Once we had every layer reduced to a number of identification values, we aggregated these together and together with a breakdown of the structure, a signature was generated. During this investigation, it was recorded that the process for extracting an \textit{impression} of the neural network model needs to be one way. If we are focusing on the trust of the system that the model is dependent on, it is necessary to ensure that the model cannot be recreated without the complete data source and process needed to accurately regenerate the model.
 
-The outcome of this project will be establishing if the model is either identical, or the weights and bias are similar. In almost every case, this \textit{\textbf{will not}} be reproducible, instead creating a brand new instance that that path of provenance will be based on. That process is shown in \ref{fig_sig_generator}
+The outcome of this project will be establishing if the model is either identical, or the weights and bias are similar. In almost every case, this \textit{\textbf{will not}} be reproducible, instead creating a brand new instance that that path of provenance will be based on. That process is shown below in figure \ref{fig_sig_generator}
 
 \begin{figure}[!ht]
     \centering
@@ -95,7 +95,7 @@ The outcome of this project will be establishing if the model is either identica
     \label{fig_sig_generator}
 \end{figure}
 
-The flow of generating a new signature is highly dependant on the main hashing algorithm used prior to returning a unique signature. 
+The flow of generating a new signature is highly dependant on the main hashing algorithm used prior to returning a unique signature. To achieve this, we examined the outcome of running a basic hashing algorithm on each layer, running a SHA-2\cite{technologySecureHashStandard2015} algorithm on the whole stack, and obtaining the basic information synopsis from each layer into an array, and running an SHA-256 algorithm on both the data and the structure array. This method provide the optimal mix between efficiency and utility. While running a number of sha265 update functions will impact on time, particularly in models with a high number of layers to run functions on, it allows minor changes to the layer that don't affect the functionality such as changes names, and other synopsis data. While uniqueness is paramount for the model, unless it is caused by initialisers, then it should be left to one side.
 
 \begin{table}[!ht]
     \centering
@@ -119,55 +119,51 @@ The name of the layer was removed as an indicator as the name potentially change
 \subsection{Robustly Recording Changes}
 As we now have a method of identifying the model in a broken down format, the next stage is to record and apply a signature to the model. There are a number of methods of ensuring that the model is recorded. The key part is to take the series of hashes on each layer, combined with the model shape, and generate a signature. The signature is what will be recorded as an immutable value that can be regenerated every time the \textbf{exact} same model is used. With this identification, we can create a list showing the parent and child of the model.
 
-To ensure this is done correctly, we have two applications - local and global.
-\subsection{Global Changes}
-For global changes there will be a globa repository containing the signature and summary of published models. 
-
 \begin{table}[!ht]
     \centering
     \caption{Structural Data Stored per Layer}
     \setlength\tabcolsep{0pt} % make LaTeX figure out intercolumn spacing
     \begin{tabular}{@{} p{2cm} p{6.5cm}  @{}}
-            \hline
-            Name & Desc \\
-            \hline
-            "class" & Class Type of the Layer. There are a number of potential outcomes for the layer type. We do not use the layer type for assessment of the data, purely to identify if the structure has changed. \\
-            "input\_shape" & The Shape of the input Array, expressed as a set, i.e. \textit{(None, 224, 224, 3)} for an image input. \\
-            "output\_shape" &  The shape of the output layer of the model. This contains either a probability output contain the number of possible outcomes, but can also contain full image data in segmentation and GAN applications. \\
-            "trainable" &  A value which indicates if the layer is trainable. Including this boolean change will indicate if transfer learning is being used. \\
-            "params" &  The number of parameters in the layer in terms of weights and biases \\
-            \hline
+        \hline
+        Name & Desc \\
+        \hline
+        "class" & Class Type of the Layer. There are a number of potential outcomes for the layer type. We do not use the layer type for assessment of the data, purely to identify if the structure has changed. \\
+        "input\_shape" & The Shape of the input Array, expressed as a set, i.e. \textit{(None, 224, 224, 3)} for an image input. \\
+        "output\_shape" &  The shape of the output layer of the model. This contains either a probability output contain the number of possible outcomes, but can also contain full image data in segmentation and GAN applications. \\
+        "trainable" &  A value which indicates if the layer is trainable. Including this boolean change will indicate if transfer learning is being used. \\
+        "params" &  The number of parameters in the layer in terms of weights and biases \\
+        \hline
     \end{tabular}
 \end{table}
 
+To ensure this is done correctly, we have two applications - local, or development and global, or distribution. For global changes single global repository was created in the cloud, where all participants with access can determine if the model being created or downloaded has an existing history. This history can then be used to create a new path of provenance. First, though, the model has to be trained. 
+
 \subsection{Local Changes vs Global Changes}
 
-An additional benefit of the summarisation is to be able to view the model as it is being trained. This is a local filestore or database that contains a more regular record of the the summary changes. It is recommended that global model repository is only used for publishing models that require traceability, and not for regular changes.
+An additional benefit of the summarisation is to be able to view the model as it is being trained. This is where we introduced a local data repository that can be shared across development teams and organisations to keep track internal models prior to release. This is in comparison with the global model repository, which should only be used for publishing models that require traceability, and not for regular changes.
 
-In keeping with Git vocabulary, local changes are updated with the \verb|model_add(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons.
-To commit the model to the public repository, the \verb|model_add(model, [parent])| command is used, with this time the original model that already exists in the repository. The command will return an error if the parent does not exist.
+In keeping with Git vocabulary, local changes are updated with the \verb|push_model(model, [parent])| command, which takes a model and returns a signature and commits the information to a local repository. The local repository stores the abstracted model information set that can be used for local comparisons.
+To commit the model to the public repository, either the the \verb|push_model(model, [baseline])| command is used with the \verb|local=False| parameter, or if the model has already be updated elsewhere and the model itself is not available, the \verb|push_to_cloud(signature)| function will commit this with the previously set baseline used as the parent. When applied to the global repository, this will return an error if the parent does not exist, unless permission is granted to create a new ancestor.
 
 To provide reference storage for the model repositories, we created two MongoDB instances with the same collection structure. There are two collections - the signatures and the model data. This was to enable verification of the evolution path and when necessary pull the model synopsis for comparison.
 
+The signature dataset contains the unique signature, as well as the internal id providing a timestamp. 
+
 \begin{lstlisting}
-db.model.createIndex( {signature:1},{unique:true} )
-db.model.insertOne( { signature:'0x123412341234', creator:'brendanboner@gmail.com', previous:null, date:'01-01-2020 16:25' } )
+{"_id":{"$oid":"611063067dbea4ce80c747a0"},"signature":"ede69fca86a03c780a98dcec6fc1cfe406a3448dcba95663baa18bf853bc2f0f","parent":null,"username":"brendan.bonner2@mail.dcu.ie","organisation":"Dublin City University","model_source":"Keras Original ResNet50","model_data":{"$oid":"611063067dbea4ce80c7479f"}}
 \end{lstlisting}
 
+The final parament points to the model collection, where a signature is required to find the model. Once a signature is available, it is possible to recover the impression of the complete tree, including the structure and data.
+
 \subsection{Comparing Models}
-To ensure there is traceability in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textit{StdDev} \& \textit{Angle of Array}
+To ensure there is traceability in between the models, if a parent model is defined, a \textit{b-score} is generated with a degree of difference between the models. The score is based on two factors, the difference between the model structure, and the difference between the two primary parameters for each layer: \textit{StdDev} \& \textit{Skew}. 
 
-\subsection{Collision Management}
-
-{ \itshape
-In computer science, a collision or clash is a situation that occurs when two distinct pieces of data have the same hash value, checksum, fingerprint, or cryptographic digest.[1]
-
-Due to the possible applications of hash functions in data management and computer security (in particular, cryptographic hash functions), collision avoidance has become a fundamental topic in computer science.
-
-Collisions are unavoidable whenever members of a very large set (such as all possible person names, or all possible computer files) are mapped to a relatively short bit string. This is merely an instance of the pigeonhole principle.[1]
-
-The impact of collisions depends on the application. When hash functions and fingerprints are used to identify similar data, such as homologous DNA sequences or similar audio files, the functions are designed so as to maximize the probability of collision between distinct but similar data, using techniques like locality-sensitive hashing.[2] Checksums, on the other hand, are designed to minimize the probability of collisions between similar inputs, without regard for collisions between very different inputs.[3]
-}
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{model_changes.png}
+    \caption{Difference between model weights and skew per layer}
+    \label{fig:weightdiff}
+\end{figure}
 
 
 \subsection{Packaging}
@@ -191,7 +187,7 @@ mydb = lifecycle_db (
 mydb.init_model_db()
 \end{lstlisting}
 
-As an example, we were able to apply the package directly to the current leader in the Kaggle Dogs vs Cats challenge\cite{golle_machine_2008}. We were able to add the code example above to the python notebook, add the lifecycle.callback to the fit function. From there we successfully recorded the model prior to training (which was recognised as a ResNet50 network from the global repository), and the training was recorded in the local repository, with two models being recorded as children of the core ResNet50 network on the global repository.
+As an example, we were able to apply the package directly to the current leader in the Kaggle Dogs vs Cats challenge\cite{golleMachineLearningAttacks2008}. We were able to add the code example above to the python notebook, add the lifecycle.callback to the fit function. From there we successfully recorded the model prior to training (which was recognised as a ResNet50 network from the global repository), and the training was recorded in the local repository, with two models being recorded as children of the core ResNet50 network on the global repository.
 
 \begin{lstlisting}
 from lifecycle.callback import LifecycleCallback
@@ -202,13 +198,13 @@ callbacks = [
 \end{lstlisting}
 
 The result of the initial local stored training, when reduced to 5 epoch, is shown below, with significant training indicated on the model from the base model.
-
+During the course of the sampling, we examined every publicly available sample that included training data from the Keras GitHub library, and we able to show that the lifecycle functions can be applied to CNNs, as well and RNN, Transformers Segmentation classification applications without modifications. 
 
 \begin{lstlisting}
-23:24:31 (user:BB)  Weight Change 0.3657% Skew Change -0.206
-23:24:28 (user:BB), Weight Change 0.3496% Skew Change -0.161
-23:24:25 (user:BB), Weight Change 0.3342% Skew Change -0.131
-23:24:21 (user:BB), Weight Change 0.3194% Skew Change -0.109
-23:24:16 (user:BB), Weight Change 0.5589% Skew Change -0.259
-23:04:38 (user:Keras), Weight Change 0.0000% Skew Change 0.000
+23:24:31 (user:BB)  Weight 0.3657% Skew -0.206
+23:24:28 (user:BB), Weight 0.3496% Skew -0.161
+23:24:25 (user:BB), Weight 0.3342% Skew -0.131
+23:24:21 (user:BB), Weight 0.3194% Skew -0.109
+23:24:16 (user:BB), Weight 0.5589% Skew -0.259
+23:04:38 (user:Keras), Weight 0.0000% Skew 0.000
 \end{lstlisting}

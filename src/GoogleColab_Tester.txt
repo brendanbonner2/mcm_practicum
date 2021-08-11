@@ -2,7 +2,7 @@
 !pip install DeepDiff
 !pip install dnspython
 
-!pip install lifecycle-0.0.2.tar.gz
+!pip install lifecycle-0.0.3.tar.gz
 
 
 from lifecycle import lifecycle_model
@@ -24,3 +24,20 @@ mydb = lifecycle_db (
     lifecycle=my_life)
 mydb.init_model_db()
 
+model_source = 'tensorflow quickstart'
+from lifecycle.callback import LifecycleCallback
+
+callbacks = [
+    LifecycleCallback( mydb)
+]
+
+
+
+
+# LIFECYCLE UPDATE
+baseline_model = mydb.push_model(model)
+
+
+mydb.family_tree(baseline_model)
+
+mydb.plot_interactive_history('6729f939d7a10ec504a7930563b20ec03af86c487f2b53354d27d26e4e229816')

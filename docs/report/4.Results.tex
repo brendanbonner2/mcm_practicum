@@ -1,6 +1,6 @@
 \section{Results and Discussion}
 
-The practicum was able to identify the internal structure of the models used for machine learning applications, and abstract the content to create a single 32 byte indicator, that can be used as an identifier for uniquely identifying the provenance of machine learning models. The two key applications; recording the changes of the model during the training process locally, and publishing the signature to a cloud repository for verification, validation and traceability all resulted in a mechanism for recording the lifecycle of models.
+The \textit{Practicum} was able to identify the internal structure of the models used for machine learning applications, and abstract the content to create a single 32 byte indicator, that can be used as an identifier for uniquely identifying the provenance of machine learning models. The two key applications; recording the changes of the model during the training process locally, and publishing the signature to a cloud repository for verification, validation and traceability all resulted in a mechanism for recording the lifecycle of models.
 
 Beyond looking at simple models, we were able to generate signatures for all default Keras models, as well as sample models used in competitive machine learning challenges. In all cases, we were able to generate a \textit{family tree} of the model's history, as well as an \textit{ancestor} function that identifies the original model used as the baseline for published models. Following the process presented in Figure \ref{fig:lifecycleModels}, we are able to store multiple relationships between models as they are created and published. More importantly, we are not able to remove the model from the global repository.
 
@@ -42,23 +42,33 @@ The first straightforward result, is being able to produce simplified impression
 
 One of the most powerful elements for AI practitioners, is the ability to generate a timeline of releases based on when a model is released. In the example shown in figure \ref{fig:lifecycle_in real}, The initial model is shown preserved in both the local and remote repositories. At the end of the model training process, each individual iteration is stored internally with a parent<=>child relationship as part to training process. Once a model is ready for internal testing, it can be baselined, updating the model to point to the original base model. This is shown in the iterations in light blue below. When a model is ready for public release, then the model is baselined.
 
-\begin{figure}[!t]
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=2.5in]{lifecycle.png}
     \caption{Lifecycle of Models in Development Path}
     \label{fig:lifecycle_in real}
 \end{figure}
 
-The true power of this is being able to use the system to verify and baseline systems, so they are compliant and can be audited in line emerging standard in AI, such as the EU Artificial Intelligence Act, inspired by the work of the AI HLEG \cite{high-level_expert_group_on_ai_ethics_2019}. Every subsequent model released will be added to the chain, and at anytime the model itself can be used to generate a signature while shows the history.
+The true power of this is being able to use the system to verify and baseline systems, so they are compliant and can be audited in line emerging standard in AI, such as the EU Artificial Intelligence Act, inspired by the work of the AI HLEG \cite{high-levelexpertgrouponaiEthicsGuidelinesTrustworthy2019}. Every subsequent model released will be added to the chain, and at anytime the model itself can be used to generate a signature while shows the history.
 
-    Showing the history of the models either locally or remotely
-    Identifying the differences between models
-    Family Tree of Models
+The final set of tools included in the Practicum provide the overview of the history. The \verb|lifecycle.get_history()| function returns the history in either the developers or the global repository of a given signature, providing the dates, basic information about the model as well as the important signature. The output of signatures is quite extensive when recording the history of training, although it has been successful in staying within the family branch. Additional functionality is provided by the \verb|lifecycle.get_ancestor()|, which shows the local root node, or the ultimate parent in the global repository. Of course, this can be applied in two directions, and the \verb|lifecycle.family_tree()| function records all children available in a nested group.
 
-\subsection{Difference between published Models}
-    Obtaining an overview of parameter changes of official models
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=2.5in]{learning process of transformer.png}
+    \caption{Transformer Learning Process}
+    \label{fig:transformer}
+\end{figure}
 
-\subsection{Performance}
+The true power of this function will be a full graphical GUI to explore the graph, and functions are avail to plot both the history (figure \ref{fig:transformer}) as well as an interactive tool for comparing the entire tree. The performance of both is significantly faster than any other tools for comparing the layer structure of models in real time.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=2.5in]{model_changes.png}
+    \caption{Comparison of Before/After Training}
+    \label{fig:beforeafter}
+\end{figure}|
+
 
 
 
