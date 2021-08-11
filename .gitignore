@@ -40,3 +40,4 @@ kaggle*.zip
 .DS_Store
 Icon?
 lifecycle.egg-info
+docs/report/practicum_paper.bcf
