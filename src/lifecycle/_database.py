@@ -4,8 +4,10 @@ import pymongo
 from bson.objectid import ObjectId
 import numpy as np
 import logging
+import time
 
 log = logging.getLogger(__name__)
+
 
 def init_model_db(self):
 
@@ -28,6 +30,11 @@ def init_model_db(self):
     if self.create_index:
         try:
             self.local_signature_collection.create_index(
+                [("key", pymongo.DESCENDING)],
+                unique=True
+            )
+
+            self.local_signature_collection.create_index(
                 [("signature", pymongo.DESCENDING)],
                 unique=True
             )
@@ -44,6 +51,11 @@ def init_model_db(self):
         try:
             # Only if there is a remote account, allow writing, otherwise read only
             self.remote_signature_collection.create_index(
+                [("key", pymongo.DESCENDING)],
+                unique=True
+            )
+            # Only if there is a remote account, allow writing, otherwise read only
+            self.remote_signature_collection.create_index(
                 [("signature", pymongo.DESCENDING)],
                 unique=True
             )
@@ -58,6 +70,7 @@ def write_model_db(self,
     organisation = None,
     model_source=None,
     parent = '',
+    ref='',
     local=True):
 
     if local:
@@ -85,6 +98,10 @@ def write_model_db(self,
             signature)
         )
 
+        if not ref:
+            epoch = time.time()
+            ref = "%s_%d" % (user, epoch)
+
         # Inset Model Data to Database (modeldata)
         signature_data =  {
             'signature': signature,
@@ -92,7 +109,8 @@ def write_model_db(self,
             'username': user,
             'organisation':organisation,
             'model_source': model_source,
-            'model_data': model_id
+            'model_data': model_id,
+            'ref': ref
         }
 
         x = db_sig.insert_one(signature_data)
@@ -113,7 +131,7 @@ def write_model_db(self,
 
 
 def push_model(self,model, local=True, parent=None,
-    user='', organisation = '', model_source='', useParent=False):
+    user='', organisation = '', model_source='', ref='', useParent=False):
 
     if self.lifecycle:
         signature, layer_data = self.lifecycle.create_model_data(model)
@@ -128,7 +146,8 @@ def push_model(self,model, local=True, parent=None,
             user=user,
             organisation=organisation,
             local=local,
-            model_source=model_source
+            model_source=model_source,
+            ref=ref
         )
         
         if local == True:
@@ -143,7 +162,7 @@ def push_model(self,model, local=True, parent=None,
 
 
 
-def get_signature(self,signature, local=True):
+def get_signature(self,signature=None,ref=None, local=True):
     # print('looking for ', signature )
     
     if local:
@@ -151,8 +170,13 @@ def get_signature(self,signature, local=True):
     else:
         db_sig = self.remote_signature_collection
 
-    signature_data = db_sig.find_one({'signature': signature})
-    
+    if ref:
+        signature_data = db_sig.find_one({'ref': ref})
+    elif signature:
+        signature_data = db_sig.find_one({'signature': signature})
+    else:
+        log.warning('No Signature or Reference Requested')
+
     if(signature_data):
         return signature_data
     else:
@@ -160,13 +184,27 @@ def get_signature(self,signature, local=True):
 
 
 # The web framework gets post_id from the URL and passes it as a string
-def get_model_data(self, model_id=None, signature=None, local=True):
+def get_model_data(self, model_id=None, signature=None, ref=None, local=True):
     if local:
         db_data = self.local_data_collection
     else:
         db_data = self.remote_data_collection
 
-    if signature:
+    if ref:
+        log.info('getting model for reference: {}'.format(ref))
+        mysig = self.get_signature(ref=ref, local=local)
+        if not mysig:
+            # if not local then get remote
+            log.info('could not find signature locally, searching remote repo')
+            mysig = self.get_signature(ref=ref, local=False)
+
+        if mysig:
+            model_object = mysig['model_data']
+            document = db_data.find_one({'_id': model_object})
+        else:
+            log.warning('Could not find signature')
+            document = None
+    elif signature:
         log.info('getting model for signature: {}'.format(signature))
         mysig = self.get_signature(signature=signature, local=local)
         if not mysig:
@@ -194,10 +232,20 @@ def get_model_data(self, model_id=None, signature=None, local=True):
     return document
 
 def get_baseline(self):
+    """Return the class local variable with the current baseline
+
+    Returns:
+        [string]: [the current baseline signature]
+    """    
     # get local signature
     return self.baseline
 
 def set_baseline(self,signature):
+    """Set the class baseline to the signature provided
+
+    Args:
+        signature ([string]): [signature to set baseline for pushing]
+    """    
     # get local signature
     self.baseline = self.get_signature(signature=signature, local=True)
     if self.baseline == None:
@@ -206,7 +254,11 @@ def set_baseline(self,signature):
 
 
 def push_to_cloud(self, signature):
-    # Take a local model, and push to the cloud, useful for baselines
+    """Take a local model, and push to the cloud, useful for baselines
+
+    Args:
+        signature ([string]): [signtaure of local model to push to cloud]
+    """
 
     # Check if signature already exist in cloud
     remote_signature = self.get_signature(signature,local=False)
@@ -239,15 +291,48 @@ def push_to_cloud(self, signature):
 
     
 def family_tree(self, root, tab=0, local=True):
+    """Generate a family tree of a signature
+
+    Args:
+        root ([string]): the ancestor of the family tree
+        tab (int, optional): Number of tabs per indentation. Defaults to 0.
+        local (bool, optional): take the local or global signature. Defaults to True.
+    """
 
     if local:
         db_data = self.local_signature_collection
     else:
         db_data = self.remote_signature_collection
 
-    print('{}{}'.format(('\t' * int(tab)), root))
-    child = db_data.find({'parent':root})
-    for i in child:
-        if i:
-            self.family_tree(i['signature'], tab + 1)
+    
+    # get details for the entry
+    signature = self.get_signature(root, local=local)
+
+    if signature:
+        tree_date = signature['_id'].generation_time
+        if 'ref' in signature:
+            details = signature['ref']
+        else:
+            details = signature['model_source']
+
+
+        changes = self.compare_models(root, signature['parent'])
+        if changes:
+            log.info(changes)
+            structural_diff = len(changes['structure'])
+            data_diff = {'weight':np.prod(changes['data']['weight']), 'skew':np.prod(changes['data']['skew'])}
+
+            print('{}{}: {} [w:{:.4f}%/s:{:.4f}%/{}]'.format(('\t' * int(tab)), tree_date, details,
+                data_diff['weight'],
+                data_diff['skew'],
+                structural_diff)
+            )
+        else:
+            print('{}{}: {} [w0/s0/0]'.format(('\t' * int(tab)), tree_date, details))
+
+
+        child = db_data.find({'parent':root})
+        for i in child:
+            if i:
+                self.family_tree(i['signature'], tab + 1)
         
