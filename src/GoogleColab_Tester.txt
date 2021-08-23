@@ -41,3 +41,30 @@ baseline_model = mydb.push_model(model)
 mydb.family_tree(baseline_model)
 
 mydb.plot_interactive_history('6729f939d7a10ec504a7930563b20ec03af86c487f2b53354d27d26e4e229816')
+
+
+
+# Local Version
+
+from lifecycle import lifecycle_model
+from lifecycle import lifecycle_db
+from lifecycle.callback import LifecycleCallback
+
+my_life = lifecycle_model()
+mydb = lifecycle_db (
+    username = 'projectUser',password = 'DCUpassword',
+    user='brendan.bonner2@mail.dcu.ie', organisation='Dublin City University',
+    lifecycle=my_life)
+mydb.init_model_db()
+
+model_source = 'tensorflow quickstart'
+
+callbacks = [
+    LifecycleCallback( mydb)
+]
+
+
+# Baseline the training model
+initial_model = mydb.push_model(model)
+# Show initial model
+print(mydb.get_signature(initial_model)['ref'])

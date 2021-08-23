@@ -25,6 +25,7 @@ class lifecycle_db:
 
     #Imported methods
     from ._database import init_model_db, write_model_db, get_model_data,get_signature, push_model, push_to_cloud, family_tree, get_last_child
+    from ._database import get_baseline, set_baseline
     from ._analysis  import get_ancestor, get_history, compare_models, compare_model_data
     from ._plot import plot_changes, plot_history, plot_interactive_history, my_plot_func
 

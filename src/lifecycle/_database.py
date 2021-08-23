@@ -232,7 +232,7 @@ def get_model_data(self, model_id=None, signature=None, ref=None, local=True):
             document = self.remote_data_collection.find_one({'_id': ObjectId(model_id)})
 
         if not document:
-            log.warning('Could not find model')
+            log.info('Could not find model')
 
     return document
 
@@ -287,7 +287,8 @@ def push_to_cloud(self, signature):
                     user=self.user,
                     organisation=self.organisation,
                     local=False,
-                    model_source=local_signature['model_source']
+                    model_source=local_signature['model_source'],
+                    ref=local_signature['ref']
                 )
             else:
                 log.warning('model not found in local database')
@@ -327,13 +328,13 @@ def family_tree(self, root, tab=0, local=True):
             structural_diff = len(changes['structure'])
             data_diff = {'weight':np.prod(changes['data']['weight']), 'skew':np.prod(changes['data']['skew'])}
 
-            print('{}{}: {} [w:{:.4f}%/s:{:.4f}%/{}]'.format(('\t' * int(tab)), tree_date, details,
+            print('{}{}: {} [w:{:.4f}%/s:{:.4f}%/{}]'.format((' ' * int(tab)), tree_date, details,
                 data_diff['weight'],
                 data_diff['skew'],
                 structural_diff)
             )
         else:
-            print('{}{}: {} [w0/s0/0]'.format(('\t' * int(tab)), tree_date, details))
+            print('{}{}: {} [w0/s0/0]'.format((' ' * int(tab)), tree_date, details))
 
 
         child = db_data.find({'parent':root})
