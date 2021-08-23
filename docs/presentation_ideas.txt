@@ -1,0 +1,31 @@
+
+
+Introduction to Issue
+
+Trustworthy AI
+XAI - eXplainable AI
+Trying to find a way to regain trust in Blackbox
+
+Current Research
+
+Ovrerview of AIF360 and Visualisation
+Trying to deternine why a system behaves
+
+Comparison with learning systems
+Birth => Education/Training => Verification => Deployment
+
+
+How to establish a record
+Purpose: To show AI system has a lifecycle
+To Identify where systems have use shared models
+To track revision and deployment of systems
+To Make a comparison between models
+    Also - to show how a model is trained
+
+
+The inside of an AI model - Layers and Biases
+Reducing the model down to a simplified version, structure and data
+Comparison of models
+Comparison of data - when training, when deployed
+
+

@@ -4,6 +4,8 @@ from deepdiff.serialization import MODULE_NOT_FOUND_MSG
 import numpy as np
 import logging
 
+from numpy.core.numeric import full
+
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
@@ -39,8 +41,8 @@ def plot_history(self, signature):
     ax.set_ylim([0,100])
     ax2.set_ylim([-200,200])
 
-    ax.plot_date(plt_dates, weights, 'b-')
-    ax2.plot_date(plt_dates, skews)
+    ax.plot_date(plt_dates, weights, 'b-', linestyle='solid')
+    ax2.plot_date(plt_dates, skews, linestyle='solid')
     xfmt = mdates.DateFormatter('%d-%m %H:%M')
     ax.xaxis.set_major_formatter(xfmt)
 
@@ -102,7 +104,7 @@ def plot_changes(self,sig1,sig2):
 
 def my_plot_func(self, value):
     disptime = value -1
-    fig, axs = plt.subplots(2,8)
+    fig, axs = plt.subplots(2)
     layers = len(self.fig_full_weight[0])
     x = np.arange(0, layers)
     axs[0].grid(True)
@@ -114,41 +116,44 @@ def my_plot_func(self, value):
     y = self.fig_full_weight[disptime]
     axs[0].set_ylim(0, self.fig_max_weight*1.1)
     axs[1].set_ylim(0, self.fig_max_skew*1.1)
-    axs[0].set_title(self.fig_full_date[disptime])
+    axs[0].set_title(self.fig_full_date[disptime].ctime())
     axs[1].bar(x, y_skew, color='red', alpha=0.4)
     axs[0].bar(x, y_weight, alpha=0.8)
 
 
-def plot_interactive_history(self,sig):
+def plot_interactive_history(self,sig, local=True):
 
-    history = self.get_history(sig, full_data=True)
+    history = self.get_history(sig, full_data=True, local=local)
 
     full_weight = []
     full_skew = []
     full_date = []
 
-    for m in history:
+    if history:
+        for m in history:
 
-        date = m['timestamp']
+            date = m['timestamp']
 
-        if m['data']:
-            graph_data_weight = []
-            graph_data_skew = []
-            for k,v in m['data'].items():
-                graph_data_weight.append(v['weight_std'])
-                graph_data_skew.append(v['skew'])
-        full_weight.append(graph_data_weight)
-        full_skew.append(graph_data_skew)
-        full_date.append(date)
+            if m['data']:
+                graph_data_weight = []
+                graph_data_skew = []
+                for k,v in m['data'].items():
+                    graph_data_weight.append(v['weight_std'])
+                    graph_data_skew.append(v['skew'])
+            full_weight.append(graph_data_weight)
+            full_skew.append(graph_data_skew)
+            full_date.append(date)
 
-    # put all values in class for printing
-    self.fig_full_weight = full_weight
-    self.fig_full_skew = full_skew
-    self.fig_full_date = full_date
+        # put all values in class for printing
+        self.fig_full_weight = full_weight
+        self.fig_full_skew = full_skew
+        self.fig_full_date = full_date
 
-    fig_history_size = len(full_weight)
-    self.fig_max_weight = np.max(full_weight)
-    self.fig_max_skew = np.max(full_skew)
-    print('History Size', fig_history_size)
+        fig_history_size = len(full_weight)
+        self.fig_max_weight = np.max(full_weight)
+        self.fig_max_skew = np.max(full_skew)
+        print('History Size', fig_history_size)
 
-    interact(self.my_plot_func, value = widgets.IntSlider(value=1, min=1, max=fig_history_size,step=1))
+        interact(self.my_plot_func, value = widgets.IntSlider(value=1, min=1, max=fig_history_size,step=1))
+    else:
+        print('no history found')

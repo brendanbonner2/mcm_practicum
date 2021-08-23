@@ -1,10 +1,13 @@
 # database functions for the lifecycle management
 
+from inspect import signature
 import pymongo
 from bson.objectid import ObjectId
 import numpy as np
 import logging
 import time
+
+from tensorflow.python.ops.gen_math_ops import sign
 
 log = logging.getLogger(__name__)
 
@@ -178,8 +181,10 @@ def get_signature(self,signature=None,ref=None, local=True):
         log.warning('No Signature or Reference Requested')
 
     if(signature_data):
+        log.info('Returning Signature')
         return signature_data
     else:
+        log.info('Signature {} not found'.format(signature))
         return None
 
 
@@ -335,4 +340,31 @@ def family_tree(self, root, tab=0, local=True):
         for i in child:
             if i:
                 self.family_tree(i['signature'], tab + 1)
-        
+
+
+def get_last_child(self, root, local=True):
+    """Generate a family tree of a signature
+
+    Args:
+        root ([string]): the ancestor of the family tree
+        tab (int, optional): Number of tabs per indentation. Defaults to 0.
+        local (bool, optional): take the local or global signature. Defaults to True.
+    """
+
+    if local:
+        db_data = self.local_signature_collection
+    else:
+        db_data = self.remote_signature_collection
+
+    
+    # get details for the entry
+    last_child = root
+    log.info('finding child for {}'.format(root))
+    signature_data = db_data.find_one({'parent': root})
+    while signature_data:
+        root = signature_data['signature']
+        log.info('finding child for {}'.format(root))
+        last_child = signature_data['signature']
+        signature_data = db_data.find_one({'parent': root})
+
+    return last_child
